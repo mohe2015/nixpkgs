@@ -3,7 +3,7 @@
 let
   cfg = config.services.peertube;
 
-  configFile = pkgs.writeText  "production.yaml" ''
+  configFile = pkgs.writeText "production.yaml" ''
     listen:
       port: ${toString cfg.listenHttp}
 
@@ -37,6 +37,10 @@ let
       cache: '/var/lib/peertube/storage/cache/'
       plugins: '/var/lib/peertube/storage/plugins/'
       client_overrides: '/var/lib/peertube/storage/client-overrides/'
+  '';
+
+  configFileExtra = pkgs.writeText "local.yaml" ''
+    ${cfg.extraConfig}
   '';
 
   cfgService = {
@@ -221,6 +225,13 @@ in {
         default = false;
         description = "Configure local Postfix SMTP server for PeerTube";
       };
+
+      passwordFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        example = "/run/keys/peertube/password-smtp";
+        description = "Password for smtp server";
+      };
     };
 
     package = lib.mkOption {
@@ -259,6 +270,13 @@ in {
       { assertion = cfg.database.passwordFile == null || !lib.hasPrefix builtins.storeDir cfg.database.passwordFile;
           message = ''
             <option>services.peertube.database.passwordFile</option> points to
+            a file in the Nix store. You should use a quoted absolute path to
+            prevent this.
+          '';
+      }
+      { assertion = cfg.smtp.passwordFile == null || !lib.hasPrefix builtins.storeDir cfg.smtp.passwordFile;
+          message = ''
+            <option>services.peertube.smtp.passwordFile</option> points to
             a file in the Nix store. You should use a quoted absolute path to
             prevent this.
           '';
@@ -310,6 +328,7 @@ in {
 
       environment.NODE_CONFIG_DIR = "/var/lib/peertube/config";
       environment.NODE_ENV = "production";
+      environment.NODE_APP_INSTANCE = "1";
       environment.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
       environment.HOME = cfg.package;
 
@@ -320,7 +339,7 @@ in {
         ExecStartPre = let preStartScript = pkgs.writeScript "peertube-pre-start.sh" ''
           #!/bin/sh
           umask 077
-          cat > /var/lib/peertube/config/local.yaml <<EOF
+          cat > /var/lib/peertube/config/local-1.yaml <<EOF
           ${lib.optionalString ((!cfg.database.createLocally) && (cfg.database.passwordFile != null)) ''
           database:
             password: '$(cat ${cfg.database.passwordFile})'
@@ -329,10 +348,14 @@ in {
           redis:
             auth: '$(cat ${cfg.redis.passwordFile})'
           ''}
-          ${cfg.extraConfig}
+          ${lib.optionalString (cfg.smtp.passwordFile != null) ''
+          smtp:
+            password: '$(cat ${cfg.smtp.passwordFile})'
+          ''}
           EOF
           ln -sf ${cfg.package}/config/default.yaml /var/lib/peertube/config/default.yaml
           ln -sf ${configFile} /var/lib/peertube/config/production.yaml
+          ln -sf ${configFileExtra} /var/lib/peertube/config/local.yaml
         '';
         in "${preStartScript}";
         ExecStart = let startScript = pkgs.writeScript "peertube-start.sh" ''
