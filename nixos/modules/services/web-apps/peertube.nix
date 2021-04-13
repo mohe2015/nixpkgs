@@ -37,8 +37,6 @@ let
       cache: '/var/lib/peertube/storage/cache/'
       plugins: '/var/lib/peertube/storage/plugins/'
       client_overrides: '/var/lib/peertube/storage/client-overrides/'
-
-    ${cfg.extraConfig}
   '';
 
   cfgService = {
@@ -109,6 +107,12 @@ in {
       description = "Enable or disable HTTPS protocol";
     };
 
+    dataDir =lib. mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = "Allow access to sustom data locations";
+    };
+
     extraConfig = lib.mkOption {
       type = lib.types.lines;
       default = "";
@@ -119,6 +123,10 @@ in {
           - '192.168.10.21'
         log:
           level: 'debug'
+        storage:
+          tmp: '/opt/data/peertube/storage/tmp/'
+          logs: '/opt/data/peertube/storage/logs/'
+          cache: '/opt/data/peertube/storage/cache/'
       '';
       description = "Extra config options for peertube";
     };
@@ -321,6 +329,7 @@ in {
           redis:
             auth: '$(cat ${cfg.redis.passwordFile})'
           ''}
+          ${cfg.extraConfig}
           EOF
           ln -sf ${cfg.package}/config/default.yaml /var/lib/peertube/config/default.yaml
           ln -sf ${configFile} /var/lib/peertube/config/production.yaml
@@ -341,6 +350,8 @@ in {
         # State directory and mode
         StateDirectory = "peertube";
         StateDirectoryMode = "0750";
+        # Access write directories
+        ReadWritePaths = [ cfg.dataDir ];
         # Environment
         EnvironmentFile = cfg.serviceEnvironmentFile;
         # Sandboxing
