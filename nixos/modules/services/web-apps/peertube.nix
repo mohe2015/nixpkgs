@@ -94,12 +94,6 @@ in {
 
     settings = lib.mkOption {
       type = settingsFormat.type;
-      description = "Configuration for peertube";
-    };
-
-    extraSettings = lib.mkOption {
-      type = settingsFormat.type;
-      default = { };
       example = lib.literalExample ''
         {
           listen = {
@@ -115,7 +109,7 @@ in {
           };
         }
       '';
-      description = "Extra configuration for peertube";
+      description = "Configuration for peertube";
     };
 
     database = {
@@ -292,7 +286,6 @@ in {
         };
       }
       (lib.mkIf cfg.redis.enableUnixSocket { redis = { socket = "/run/redis/redis.sock"; }; })
-      (lib.mkIf (cfg.extraSettings != { }) cfg.extraSettings )
     ];
 
     systemd.tmpfiles.rules = [
