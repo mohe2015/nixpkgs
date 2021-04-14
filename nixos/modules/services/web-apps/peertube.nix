@@ -258,22 +258,22 @@ in {
     services.peertube.settings = lib.mkMerge [
       {
         listen = {
-          port = "${toString cfg.listenHttp}";
+          port = cfg.listenHttp;
         };
         webserver = {
           https = (if cfg.enableWebHttps then true else false);
           hostname = "${cfg.localDomain}";
-          port = "${toString cfg.listenWeb}";
+          port = cfg.listenWeb;
         };
         database = {
           hostname = "${cfg.database.host}";
-          port = "${toString cfg.database.port}";
+          port = cfg.database.port;
           name = "${cfg.database.name}";
           username = "${cfg.database.user}";
         };
         redis = {
           hostname = "${toString cfg.redis.host}";
-          port = "${toString cfg.redis.port}";
+          port = (if cfg.redis.port == null then "" else cfg.redis.port);
         };
         storage = {
           tmp = lib.mkDefault "/var/lib/peertube/storage/tmp/";
