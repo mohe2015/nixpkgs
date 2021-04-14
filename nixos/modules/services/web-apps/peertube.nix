@@ -111,10 +111,11 @@ in {
       description = "Enable or disable HTTPS protocol";
     };
 
-    dataDir =lib. mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = "Allow access to sustom data locations";
+    dataDirs =lib. mkOption {
+      type = lib.types.listOf lib.types.path;
+      default = [ ];
+      example = [ "/opt/peertube/storage" "/var/cache/peertube" ];
+      description = "Allow access to custom data locations";
     };
 
     extraConfig = lib.mkOption {
@@ -374,7 +375,7 @@ in {
         StateDirectory = "peertube";
         StateDirectoryMode = "0750";
         # Access write directories
-        ReadWritePaths = [ cfg.dataDir ];
+        ReadWritePaths = cfg.dataDirs;
         # Environment
         EnvironmentFile = cfg.serviceEnvironmentFile;
         # Sandboxing
