@@ -3,45 +3,8 @@
 let
   cfg = config.services.peertube;
 
-  configFile = pkgs.writeText "production.yaml" ''
-    listen:
-      port: ${toString cfg.listenHttp}
-
-    webserver:
-      https: ${toString (if cfg.enableWebHttps then "true" else "false")}
-      hostname: '${cfg.localDomain}'
-      port: ${toString cfg.listenWeb}
-
-    database:
-      hostname: '${cfg.database.host}'
-      port: ${toString cfg.database.port}
-      name: '${cfg.database.name}'
-      username: '${cfg.database.user}'
-
-    redis:
-      hostname: ${toString cfg.redis.host}
-      port: ${toString cfg.redis.port}
-      ${lib.optionalString cfg.redis.enableUnixSocket "socket: '/run/redis/redis.sock'"}
-
-    storage:
-      tmp: '/var/lib/peertube/storage/tmp/'
-      avatars: '/var/lib/peertube/storage/avatars/'
-      videos: '/var/lib/peertube/storage/videos/'
-      streaming_playlists: '/var/lib/peertube/storage/streaming-playlists/'
-      redundancy: '/var/lib/peertube/storage/redundancy/'
-      logs: '/var/lib/peertube/storage/logs/'
-      previews: '/var/lib/peertube/storage/previews/'
-      thumbnails: '/var/lib/peertube/storage/thumbnails/'
-      torrents: '/var/lib/peertube/storage/torrents/'
-      captions: '/var/lib/peertube/storage/captions/'
-      cache: '/var/lib/peertube/storage/cache/'
-      plugins: '/var/lib/peertube/storage/plugins/'
-      client_overrides: '/var/lib/peertube/storage/client-overrides/'
-  '';
-
-  configFileExtra = pkgs.writeText "local.yaml" ''
-    ${cfg.extraConfig}
-  '';
+  settingsFormat = pkgs.formats.json {};
+  configFile = settingsFormat.generate "production.json" cfg.settings;
 
   cfgService = {
     # Access write directories
@@ -118,24 +81,6 @@ in {
       description = "Allow access to custom data locations";
     };
 
-    extraConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      example = ''
-        listen:
-          hostname: '0.0.0.0'
-        trust_proxy:
-          - '192.168.10.21'
-        log:
-          level: 'debug'
-        storage:
-          tmp: '/opt/data/peertube/storage/tmp/'
-          logs: '/opt/data/peertube/storage/logs/'
-          cache: '/opt/data/peertube/storage/cache/'
-      '';
-      description = "Extra config options for peertube";
-    };
-
     serviceEnvironmentFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
@@ -145,6 +90,32 @@ in {
         For example write to file:
         PT_INITIAL_ROOT_PASSWORD=changeme
       '';
+    };
+
+    settings = lib.mkOption {
+      type = settingsFormat.type;
+      description = "Configuration for peertube";
+    };
+
+    extraSettings = lib.mkOption {
+      type = settingsFormat.type;
+      default = { };
+      example = lib.literalExample ''
+        {
+          listen = {
+            hostname = "0.0.0.0";
+          };
+          log = {
+            level = "debug";
+          };
+          storage = {
+            tmp = "/opt/data/peertube/storage/tmp/";
+            logs = "/opt/data/peertube/storage/logs/";
+            cache = "/opt/data/peertube/storage/cache/";
+          };
+        }
+      '';
+      description = "Extra configuration for peertube";
     };
 
     database = {
@@ -284,6 +255,46 @@ in {
       }
     ];
 
+    services.peertube.settings = lib.mkMerge [
+      {
+        listen = {
+          port = "${toString cfg.listenHttp}";
+        };
+        webserver = {
+          https = (if cfg.enableWebHttps then true else false);
+          hostname = "${cfg.localDomain}";
+          port = "${toString cfg.listenWeb}";
+        };
+        database = {
+          hostname = "${cfg.database.host}";
+          port = "${toString cfg.database.port}";
+          name = "${cfg.database.name}";
+          username = "${cfg.database.user}";
+        };
+        redis = {
+          hostname = "${toString cfg.redis.host}";
+          port = "${toString cfg.redis.port}";
+        };
+        storage = {
+          tmp = lib.mkDefault "/var/lib/peertube/storage/tmp/";
+          avatars = lib.mkDefault "/var/lib/peertube/storage/avatars/";
+          videos = lib.mkDefault "/var/lib/peertube/storage/videos/";
+          streaming_playlists = lib.mkDefault "/var/lib/peertube/storage/streaming-playlists/";
+          redundancy = lib.mkDefault "/var/lib/peertube/storage/redundancy/";
+          logs = lib.mkDefault "/var/lib/peertube/storage/logs/";
+          previews = lib.mkDefault "/var/lib/peertube/storage/previews/";
+          thumbnails = lib.mkDefault "/var/lib/peertube/storage/thumbnails/";
+          torrents = lib.mkDefault "/var/lib/peertube/storage/torrents/";
+          captions = lib.mkDefault "/var/lib/peertube/storage/captions/";
+          cache = lib.mkDefault "/var/lib/peertube/storage/cache/";
+          plugins = lib.mkDefault "/var/lib/peertube/storage/plugins/";
+          client_overrides = lib.mkDefault "/var/lib/peertube/storage/client-overrides/";
+        };
+      }
+      (lib.mkIf cfg.redis.enableUnixSocket { redis = { socket = "/run/redis/redis.sock"; }; })
+      (lib.mkIf (cfg.extraSettings != { }) cfg.extraSettings )
+    ];
+
     systemd.tmpfiles.rules = [
       "d '/var/lib/peertube/config' 0700 ${cfg.user} ${cfg.group} - -"
       "z '/var/lib/peertube/config' 0700 ${cfg.user} ${cfg.group} - -"
@@ -329,7 +340,6 @@ in {
 
       environment.NODE_CONFIG_DIR = "/var/lib/peertube/config";
       environment.NODE_ENV = "production";
-      environment.NODE_APP_INSTANCE = "1";
       environment.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
       environment.HOME = cfg.package;
 
@@ -340,7 +350,7 @@ in {
         ExecStartPre = let preStartScript = pkgs.writeScript "peertube-pre-start.sh" ''
           #!/bin/sh
           umask 077
-          cat > /var/lib/peertube/config/local-1.yaml <<EOF
+          cat > /var/lib/peertube/config/local.yaml <<EOF
           ${lib.optionalString ((!cfg.database.createLocally) && (cfg.database.passwordFile != null)) ''
           database:
             password: '$(cat ${cfg.database.passwordFile})'
@@ -355,8 +365,7 @@ in {
           ''}
           EOF
           ln -sf ${cfg.package}/config/default.yaml /var/lib/peertube/config/default.yaml
-          ln -sf ${configFile} /var/lib/peertube/config/production.yaml
-          ln -sf ${configFileExtra} /var/lib/peertube/config/local.yaml
+          ln -sf ${configFile} /var/lib/peertube/config/production.json
         '';
         in "${preStartScript}";
         ExecStart = let startScript = pkgs.writeScript "peertube-start.sh" ''
