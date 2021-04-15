@@ -291,8 +291,6 @@ in {
     systemd.tmpfiles.rules = [
       "d '/var/lib/peertube/config' 0700 ${cfg.user} ${cfg.group} - -"
       "z '/var/lib/peertube/config' 0700 ${cfg.user} ${cfg.group} - -"
-      "d '/var/lib/peertube/storage' 0750 ${cfg.user} ${cfg.group} - -"
-      "z '/var/lib/peertube/storage' 0750 ${cfg.user} ${cfg.group} - -"
     ];
 
     systemd.services.peertube-init-db = lib.mkIf cfg.database.createLocally {
