@@ -336,7 +336,7 @@ in {
       environment.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
       environment.HOME = cfg.package;
 
-      path = with pkgs; [ bashInteractive ffmpeg nodejs openssl yarn youtube-dl ];
+      path = with pkgs; [ bashInteractive ffmpeg nodejs-14_x openssl yarn youtube-dl ];
 
       serviceConfig = {
         Type = "simple";
@@ -361,11 +361,7 @@ in {
           ln -sf ${configFile} /var/lib/peertube/config/production.json
         '';
         in "${preStartScript}";
-        ExecStart = let startScript = pkgs.writeScript "peertube-start.sh" ''
-          #!/bin/sh
-          exec npm start
-        '';
-        in "${startScript}";
+        ExecStart = "${pkgs.nodejs-14_x}/bin/npm start";
         Restart = "always";
         RestartSec = 20;
         TimeoutSec = 60;
