@@ -5,8 +5,12 @@ let
 
   settingsFormat = pkgs.formats.json {};
   configFile = settingsFormat.generate "production.json" cfg.settings;
+  systemCallsList = [ "@cpu-emulation" "@debug" "@keyring" "@ipc" "@memlock" "@mount" "@obsolete" "@privileged" "@setuid" ];
 
   cfgService = {
+    # Proc filesystem
+    ProcSubset = "pid";
+    ProtectProc = "invisible";
     # Access write directories
     UMask = "0027";
     # Capabilities
@@ -29,6 +33,7 @@ let
     LockPersonality = true;
     RestrictRealtime = true;
     RestrictSUIDSGID = true;
+    RemoveIPC = true;
     PrivateMounts = true;
     # System Call Filtering
     SystemCallArchitectures = "native";
@@ -318,7 +323,7 @@ in {
         RestrictAddressFamilies = [ "AF_UNIX" ];
         MemoryDenyWriteExecute = true;
         # System Call Filtering
-        SystemCallFilter = "~@clock @cpu-emulation @debug @keyring @memlock @module @mount @obsolete @privileged @raw-io @reboot @resources @setuid @swap";
+        SystemCallFilter = "~" + lib.concatStringsSep " " (systemCallsList ++ [ "@resources" ]);
       } // cfgService;
     };
 
@@ -378,7 +383,7 @@ in {
         RestrictAddressFamilies = [ "AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK" ];
         MemoryDenyWriteExecute = false;
         # System Call Filtering
-        SystemCallFilter = "~@clock @cpu-emulation @debug @keyring @memlock @module @mount @obsolete @privileged @raw-io @reboot @setuid @swap";
+        SystemCallFilter = [ ("~" + lib.concatStringsSep " " systemCallsList) "pipe2" ];
       } // cfgService;
     };
 
