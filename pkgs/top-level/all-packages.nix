@@ -25434,8 +25434,8 @@ in
   peek = callPackage ../applications/video/peek { };
 
   peertube = callPackage ../servers/peertube {
-    # until v15 is supported but using default version
-    nodejs = pkgs.nodejs-14_x;
+    # until v16 is supported
+    #nodejs = pkgs.nodejs-15_x;
   };
 
   pflask = callPackage ../os-specific/linux/pflask {};
