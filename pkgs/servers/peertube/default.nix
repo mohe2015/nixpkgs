@@ -1,8 +1,10 @@
 { stdenv, lib, fetchFromGitHub, nodejs, mkYarnPackage, yarn2nix-moretea }:
 
-# nix-shell -p yarn yarn2nix nodejs python3
+# nix-shell -p yarn yarn2nix nodejs python3 nixpkgs#nodePackages.node2nix
 # yarn install
 # yarn2nix > yarn.nix
+# npm install
+# node2nix
 
 # https://nixos.wiki/wiki/Nixpkgs/Create_and_debug_packages
 # nix develop .#peertube
