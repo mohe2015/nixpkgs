@@ -39,7 +39,7 @@ let
           false
         fi
         mkdir -p lib/binding && tar -C lib/binding -xf ${bcrypt_lib}
-        patchShebangs ../node-pre-gyp
+        patchShebangs ../@mapbox/node-pre-gyp/bin/node-pre-gyp
         npm run install
       '';
     };
