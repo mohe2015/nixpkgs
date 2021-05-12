@@ -28,10 +28,10 @@ let
       buildInputs = [ nodePackages.node-pre-gyp ];
 
       postInstall = let
-        bcrypt_version = "5.0.0";
+        bcrypt_version = "5.0.1";
         bcrypt_lib = fetchurl {
           url = "https://github.com/kelektiv/node.bcrypt.js/releases/download/v${bcrypt_version}/bcrypt_lib-v${bcrypt_version}-napi-v3-linux-x64-glibc.tar.gz";
-          sha256 = "0j3p2px1xb17sw3gpm8l4apljajxxfflal1yy552mhpzhi21wccn";
+          sha256 = "3R3dBZyPansTuM77Nmm3f7BbTDkDdiT2HQIrti2Ottc=";
         };
       in ''
         if [ "${bcrypt_version}" != "$(cat package.json | ${jq}/bin/jq -r .version)" ]; then
