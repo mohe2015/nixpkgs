@@ -3,13 +3,13 @@
 , jq, youtube-dl, nodePackages, yarn2nix-moretea }:
 
 let
-  version = "3.0.1";
+  version = "3.2.0-rc.1";
 
   source = fetchFromGitHub {
     owner = "Chocobozzz";
     repo = "PeerTube";
     rev = "v${version}";
-    sha256 = "bIXt5bQiBBlNDFXYzcdQA8qp4nse5epUx/XQOguDOX8=";
+    sha256 = "clYGnspQhY7255YsTNiUB/zZlr5oBtB9zewl/T1bO1g=";
   };
 
   patchedSource = stdenv.mkDerivation {
