@@ -223,8 +223,22 @@ let
             }
           '';
           description = ''
-            Apache configuration can be done by adapting <option>services.httpd.virtualHosts</option>.
+            Apache configuration of the virtual host.
           '';
+        };
+
+        nginx = {
+          virtualHost = mkOption {
+            type = types.submodule (import ../web-servers/nginx/vhost-options.nix);
+            example = literalExample ''
+              {
+                serverName = "webmaster@example.org";
+                forceSSL = true;
+                enableACME = true;
+              }
+            '';
+            description = "Nginx configuration of the virtual host.";
+          };
         };
 
         poolConfig = mkOption {
@@ -281,11 +295,9 @@ in
           description = ''
             Whether to use apache2 or nginx for virtual host management.
 
-            Further nginx configuration can be done by adapting <literal>services.nginx.virtualHosts.&lt;name&gt;</literal>.
-            See <xref linkend="opt-services.nginx.virtualHosts"/> for further information.
+            Further nginx configuration can be done by adapting <literal>services.wordpress.sites.&lt;name&gt.nginx.virtualHost</literal>.
 
-            Further apache2 configuration can be done by adapting <literal>services.httpd.virtualHosts.&lt;name&gt;</literal>.
-            See <xref linkend="opt-services.httpd.virtualHosts"/> for further information.
+            Further apache2 configuration can be done by adapting <literal>services.wordpress.sites.&lt;name&gt.virtualHost</literal>.
           '';
         };
       };
@@ -404,7 +416,7 @@ in
   (mkIf (cfg.webserver == "nginx") {
     services.nginx = {
       enable = true;
-      virtualHosts = mapAttrs (hostName: cfg: {
+      virtualHosts = (hostName: cfg: mkMerge [ cfg.nginx.virtualHost {
         serverName = mkDefault hostName;
         root = "${pkg hostName cfg}/share/wordpress";
         extraConfig = ''
@@ -452,7 +464,7 @@ in
             '';
           };
         };
-      }) eachSite;
+      }]) eachSite;
     };
   })
 
