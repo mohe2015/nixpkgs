@@ -1,0 +1,195 @@
+#!/bin/env bash
+
+# Adapt from get_vsixpkg() of the original update_install_exts.sh
+
+set -eu -o pipefail
+
+# Helper to just fail with a message and non-zero exit code.
+function fail {
+    echo "$1" >&2
+    exit 1
+}
+
+function escape_doublequotes {
+    echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g'
+}
+
+DOMAIN="https://open-vsx.org"
+PUBLISHER=""
+NAME=""
+VER=""
+NO_HASH=false
+NO_META=false
+
+if [[ "$#" -eq 0 ]]; then
+fail "Expect PUBLISHER and NAME. See --help for usage"
+fi
+
+declare -a NONFLAG_ARGS=()
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            cat <<END_HELP
+Usage: nix-prefetch-openvsx [OPTIONS] PUBLISHER NAME VERSION=latest
+
+Fetch the vscode extension from Open VSX Registry
+and print the registryRef (previously \"mktplcRef\") attributes in JSON format
+
+Options:
+  -h, --help                Print this help and exit.
+  -u, --domain DOMAIN       Specify the domain of Open VSX Registry
+                            Default to
+                            $DOMAIN
+  -H, --no-hash             Do not print the nix-hash value of this extension.
+                            If set, nix-prefetch-openvsx will not the VSIX file,
+                            and will therefore not output the VSIX hash.
+                            If --no-meta isn't set, meta attributes will be fetched
+                            by downloading the \`package.json\` file alone.
+  -M, --no-meta             Do not print the meta attributes.
+                            This also prevents the VSIX file to be unpacked.
+  -t, --tmpdir TMPDIR       Specify the directory
+                            to create temporary directories in.
+                            Default to \`"\${TMPDIR:-/tmp}"\` by \`mktemp\`
+                            from the environment.
+
+If non-flag arguments (PUBLISHER, NAME, VERSION, etc.) happen to start with '-',
+they should be escaped with a '\\' prefix.
+
+END_HELP
+
+            exit 0
+            ;;
+        -u|--domain)
+            if [[ "$#" -lt 2 ]]; then
+                fail "Expect $1 DOMAIN"
+            fi
+            DOMAIN="$2"
+            shift 2
+            ;;
+        -H|--no-hash)
+            NO_HASH=true
+            shift 1
+            ;;
+        -M|--no-meta)
+            NO_META=true
+            shift 1
+            ;;
+        -t|--tmpdir)
+            if [[ "$#" -lt 2 ]]; then
+                fail "Expect $1 TMPDIR"
+            fi
+            export TMPDIR="$2"
+            shift 2
+            ;;
+        -)
+            fail "Unexpected argument $1"
+            ;;
+        -?*)
+            fail "Unexpected argument $1"
+            ;;
+        \\-*)
+            # If an argument begins with '\-'
+            # Get the second and the following characters
+            # and put into NONFLAG_ARGS
+            NONFLAG_ARGS+=("${1:1}")
+            shift 1
+            ;;
+        *)
+            NONFLAG_ARGS+=("$1")
+            shift 1
+            ;;
+    esac
+done
+
+if [[ "${#NONFLAG_ARGS[@]}" -lt 2 ]]; then
+    fail "Expect PUBLISHER and NAME"
+fi
+PUBLISHER="${NONFLAG_ARGS[0]}"
+NAME="${NONFLAG_ARGS[1]}"
+if [[ "${#NONFLAG_ARGS[@]}" -lt 3 ]] || [[ -z "${NONFLAG_ARGS[2]}" ]]; then
+    VER="latest"
+else
+    VER="${NONFLAG_ARGS[2]}"
+fi
+
+
+N="$PUBLISHER.$NAME"
+
+EXTTMP=$(mktemp -d -t vscode_exts_XXXXXXXX)
+
+# Clean up the temp folder whenever exit
+function clean_up {
+    rm -rf "$EXTTMP"
+}
+
+trap clean_up EXIT
+
+URL_META="$DOMAIN/api/$PUBLISHER/$NAME/$VER"
+N_META="${N}_meta.json"
+curl --silent --show-error -o "$EXTTMP/$N_META" "$URL_META"
+
+VER_FETCHED="$(jq -r '.version' "$EXTTMP/$N_META")"
+if [[ -z "$VER_FETCHED" ]] || [[ "$VER_FETCHED" = "null" ]]; then
+    fail "Fetched version ($VER_FETCHED) is null or empty"
+fi
+
+if [[ "$VER" = "latest" ]]; then
+    VER="$VER_FETCHED"
+else
+    if [[ "$VER" != "$VER_FETCHED" ]]; then
+        fail "Fetched version ($VER_FETCHED) does not match the specified version ($VER)"
+    fi
+fi
+
+SHA=""
+if ! $NO_HASH; then
+    URL_VSIX="$DOMAIN/api/$PUBLISHER/$NAME/$VER/file/$N-$VER.vsix"
+    curl --silent --show-error -L -o "$EXTTMP/$N.zip" "$URL_VSIX"
+    # Calculate the SHA256
+    SHA=$(nix-hash --flat --base32 --type sha256 "$EXTTMP/$N.zip")
+    if ! $NO_META; then
+        # Unpack package.json from the VSIX file
+        unzip -qp "$EXTTMP/$N.zip" "extension/package.json" > "$EXTTMP/package.json"
+    fi
+else
+    if ! $NO_META; then
+        URL_PACKAGE_JSON="$DOMAIN/api/$PUBLISHER/$NAME/$VER/file/package.json"
+        curl --silent --show-error -L -o "$EXTTMP/package.json" "$URL_PACKAGE_JSON"
+    fi
+fi
+DESCRIPTION=""
+HOMEPAGE=""
+LICENSE_RAW=""
+if ! $NO_META; then
+    # Get meta attributes from package.json
+    DESCRIPTION="$(jq -r '.description' "$EXTTMP/package.json")"
+    HOMEPAGE="$(jq -r '.homepage' "$EXTTMP/package.json")"
+    LICENSE_RAW="$(jq -r '.license' "$EXTTMP/package.json")"
+fi
+
+cat <<EOF
+{
+  "name": "$(escape_doublequotes "$NAME")"
+, "publisher": "$(escape_doublequotes "$PUBLISHER")"
+, "version": "$(escape_doublequotes "$VER")"
+EOF
+if ! $NO_HASH; then
+    cat <<EOF
+, "sha256": "$SHA"
+EOF
+fi
+if ! $NO_META; then
+    if [[ -n "$DESCRIPTION"  ]] && [[ "$DESCRIPTION" != "null" ]]; then
+        echo ", \"description\": \"$(escape_doublequotes "$DESCRIPTION")\""
+    fi
+    if [[ -n "$HOMEPAGE"  ]] && [[ "$HOMEPAGE" != "null" ]]; then
+        echo ", \"homepage\": \"$(escape_doublequotes "$HOMEPAGE")\""
+    fi
+    if [[ -n "$LICENSE_RAW"  ]] && [[ "$LICENSE_RAW" != "null" ]]; then
+        echo ", \"license-raw\": \"$(escape_doublequotes "$LICENSE_RAW")\""
+    fi
+fi
+cat <<EOF
+}
+EOF

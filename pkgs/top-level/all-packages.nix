@@ -32482,6 +32482,10 @@ with pkgs;
   nix-prefetch-github = with python3Packages;
     toPythonApplication nix-prefetch-github;
 
+  nix-prefetch-openvsx = callPackage ../misc/vscode-registries/openvsx/nix-prefetch-openvsx { };
+
+  nix-prefetch-vscode-marketplace = callPackage ../misc/vscode-registries/vscode-marketplace/nix-prefetch-vscode-marketplace { };
+
   inherit (callPackages ../tools/package-management/nix-prefetch-scripts { })
     nix-prefetch-bzr
     nix-prefetch-cvs
