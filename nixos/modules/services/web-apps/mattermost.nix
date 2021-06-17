@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib,  mattermost-server, ... }:
 
 with lib;
 
@@ -7,7 +7,7 @@ let
   cfg = config.services.mattermost;
 
   defaultConfig = builtins.fromJSON (builtins.replaceStrings [ "\\u0026" ] [ "&" ]
-    (readFile "${pkgs.mattermost}/config/config.json")
+    (readFile mattermost-server.config)
   );
 
   database = "postgres://${cfg.localDatabaseUser}:${cfg.localDatabasePassword}@localhost:5432/${cfg.localDatabaseName}?sslmode=disable&connect_timeout=10";
