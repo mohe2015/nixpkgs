@@ -339,7 +339,26 @@ in {
       environment.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
       environment.HOME = cfg.package;
 
-      path = with pkgs; [ bashInteractive ffmpeg nodejs-14_x openssl yarn youtube-dl ];
+      path = with pkgs; [
+        bashInteractive
+        (ffmpeg.overrideAttrs (old: {
+           patches = old.patches ++ [
+              # Fix incorrect segment length in HLS child playlist with fmp4 segment format
+              # FIXME remove in version 4.5
+              # https://trac.ffmpeg.org/ticket/9193
+              # https://trac.ffmpeg.org/ticket/9205
+              (fetchpatch {
+                name = "ffmpeg_fix_incorrect_segment_length_in_hls.patch";
+                url = "https://git.videolan.org/?p=ffmpeg.git;a=commitdiff_plain;h=59032494e81a1a65c0b960aaae7ec4c2cc9db35a";
+                sha256 = "03zz1lw51kkc3g3vh47xa5hfiz3g3g1rbrll3kcnslvwylmrqmy3";
+              })
+            ];
+        }))
+        nodejs-14_x
+        openssl
+        yarn
+        youtube-dl
+      ];
 
       serviceConfig = {
         Type = "simple";
