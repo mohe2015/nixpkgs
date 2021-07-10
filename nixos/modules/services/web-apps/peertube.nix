@@ -5,6 +5,15 @@ let
 
   settingsFormat = pkgs.formats.json {};
   configFile = settingsFormat.generate "production.json" cfg.settings;
+
+  env = {
+    NODE_CONFIG_DIR = "/var/lib/peertube/config";
+    NODE_ENV = "production";
+    NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+    NPM_CONFIG_PREFIX = cfg.package;
+    HOME = cfg.package;
+  };
+
   systemCallsList = [ "@cpu-emulation" "@debug" "@keyring" "@ipc" "@memlock" "@mount" "@obsolete" "@privileged" "@setuid" ];
 
   cfgService = {
@@ -38,7 +47,6 @@ let
     # System Call Filtering
     SystemCallArchitectures = "native";
   };
-
 in {
   options.services.peertube = {
     enable = lib.mkEnableOption "Enable Peertube’s service";
@@ -334,10 +342,7 @@ in {
         ++ lib.optionals cfg.database.createLocally [ "postgresql.service" "peertube-init-db.service" ];
       wantedBy = [ "multi-user.target" ];
 
-      environment.NODE_CONFIG_DIR = "/var/lib/peertube/config";
-      environment.NODE_ENV = "production";
-      environment.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
-      environment.HOME = cfg.package;
+      environment = env;
 
       path = with pkgs; [
         bashInteractive
@@ -430,8 +435,20 @@ in {
         peertube = {
           isSystemUser = true;
           group = cfg.group;
+          home = cfg.package;
         };
       })
+      { "${cfg.user}".packages = [
+        (pkgs.symlinkJoin {
+          name = "peertube-npm";
+          paths = [ pkgs.nodejs-14_x ];
+          buildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/npm ${lib.concatStrings (lib.mapAttrsToList (name: value: " --set ${name} \"${toString value}\"") env)}
+          '';
+        })
+        cfg.package pkgs.ffmpeg
+      ]; }
       (lib.mkIf cfg.redis.enableUnixSocket {${config.services.peertube.user}.extraGroups = [ "redis" ];})
     ];
 
