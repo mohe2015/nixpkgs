@@ -5,6 +5,14 @@ let
 
   settingsFormat = pkgs.formats.json {};
   configFile = settingsFormat.generate "production.json" cfg.settings;
+
+  env = {
+    NODE_CONFIG_DIR = "/var/lib/peertube/config";
+    NODE_ENV = "production";
+    NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+    HOME = "/var/lib/peertube/";
+  };
+
   systemCallsList = [ "@cpu-emulation" "@debug" "@keyring" "@ipc" "@memlock" "@mount" "@obsolete" "@privileged" "@setuid" ];
 
   cfgService = {
@@ -38,6 +46,20 @@ let
     # System Call Filtering
     SystemCallArchitectures = "native";
   };
+
+  envFile = pkgs.writeText "peertube.env" (lib.concatMapStrings (s: s + "\n") (
+    (lib.concatLists (lib.mapAttrsToList (name: value:
+      if value != null then [
+        "${name}=\"${toString value}\""
+      ] else []
+    ) env))));
+
+  peertubeEnv = pkgs.writeShellScriptBin "peertube-env" ''
+    set -a
+    source "${envFile}"
+    cd ${cfg.package}
+    eval -- "\$@"
+  '';
 
 in {
   options.services.peertube = {
@@ -334,10 +356,7 @@ in {
         ++ lib.optionals cfg.database.createLocally [ "postgresql.service" "peertube-init-db.service" ];
       wantedBy = [ "multi-user.target" ];
 
-      environment.NODE_CONFIG_DIR = "/var/lib/peertube/config";
-      environment.NODE_ENV = "production";
-      environment.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
-      environment.HOME = cfg.package;
+      environment = env;
 
       path = with pkgs; [
         bashInteractive
@@ -432,6 +451,7 @@ in {
           group = cfg.group;
         };
       })
+      (lib.attrsets.setAttrByPath [ cfg.user "packages" ] [ cfg.package peertubeEnv pkgs.ffmpeg pkgs.nodejs-14_x ])
       (lib.mkIf cfg.redis.enableUnixSocket {${config.services.peertube.user}.extraGroups = [ "redis" ];})
     ];
 
