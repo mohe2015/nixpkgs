@@ -1,12 +1,12 @@
-{ autoPatchelfHook, bzip2, cairo, coreutils, fetchurl, gdk-pixbuf, gnome2, gtk2, kcoreaddons, ki18n, kio, kservice, lib, qt4, qt511, qtbase, stdenv, runtimeShell }:
+{ autoPatchelfHook, bzip2, cairo, coreutils, fetchurl, gdk-pixbuf, pango, gtk2, kcoreaddons, ki18n, kio, kservice, lib, qt4, qtbase, stdenv, runtimeShell }:
 
 stdenv.mkDerivation rec {
   pname = "bcompare";
-  version = "4.2.10.23938";
+  version = "4.3.7.25118";
 
   src = fetchurl {
     url = "https://www.scootersoftware.com/${pname}-${version}_amd64.deb";
-    sha256 = "1825s1lbaj20d712czmaaqg7mkwfb650r53af2y30j29p6yd4wal";
+    sha256 = "165d6d81vy29pr62y4rcvl4abqqhfwdzcsx77p0dqlzgqswj88v8";
   };
 
   unpackPhase = ''
@@ -36,21 +36,21 @@ stdenv.mkDerivation rec {
   buildInputs = [
     stdenv.cc.cc.lib
     gtk2
-    gnome2.pango
+    pango
     cairo
     kio
     kservice
     ki18n
     kcoreaddons
     gdk-pixbuf
-    qt4
     bzip2
   ];
 
   dontBuild = true;
   dontConfigure = true;
+  dontWrapQtApps = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "GUI application that allows to quickly and easily compare files and folders";
     longDescription = ''
       Beyond Compare is focused. Beyond Compare allows you to quickly and easily compare your files and folders.

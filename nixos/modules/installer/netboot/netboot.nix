@@ -50,14 +50,24 @@ with lib;
       };
 
     fileSystems."/nix/store" =
-      { fsType = "unionfs-fuse";
-        device = "unionfs";
-        options = [ "allow_other" "cow" "nonempty" "chroot=/mnt-root" "max_files=32768" "hide_meta_files" "dirs=/nix/.rw-store=rw:/nix/.ro-store=ro" ];
+      { fsType = "overlay";
+        device = "overlay";
+        options = [
+          "lowerdir=/nix/.ro-store"
+          "upperdir=/nix/.rw-store/store"
+          "workdir=/nix/.rw-store/work"
+        ];
+
+        depends = [
+          "/nix/.ro-store"
+          "/nix/.rw-store/store"
+          "/nix/.rw-store/work"
+        ];
       };
 
-    boot.initrd.availableKernelModules = [ "squashfs" ];
+    boot.initrd.availableKernelModules = [ "squashfs" "overlay" ];
 
-    boot.initrd.kernelModules = [ "loop" ];
+    boot.initrd.kernelModules = [ "loop" "overlay" ];
 
     # Closures to be copied to the Nix store, namely the init
     # script and the top-level system configuration directory.
@@ -84,7 +94,7 @@ with lib;
 
     system.build.netbootIpxeScript = pkgs.writeTextDir "netboot.ipxe" ''
       #!ipxe
-      kernel ${pkgs.stdenv.hostPlatform.platform.kernelTarget} init=${config.system.build.toplevel}/init initrd=initrd ${toString config.boot.kernelParams}
+      kernel ${pkgs.stdenv.hostPlatform.linux-kernel.target} init=${config.system.build.toplevel}/init initrd=initrd ${toString config.boot.kernelParams}
       initrd initrd
       boot
     '';

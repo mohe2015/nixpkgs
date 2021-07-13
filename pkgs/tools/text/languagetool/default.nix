@@ -1,19 +1,21 @@
-{ stdenv, fetchzip, jre, makeWrapper }:
+{ lib, stdenv, fetchzip, jre, makeWrapper }:
 
 stdenv.mkDerivation rec {
   pname = "LanguageTool";
-  version = "4.6";
+  version = "5.4";
 
   src = fetchzip {
     url = "https://www.languagetool.org/download/${pname}-${version}.zip";
-    sha256 = "1z3i6kz1dz7dw2ykyk1yamrv8h5h330sfyl037hhyy9hw6p30rhg";
+    sha256 = "sha256-2khadADfzwkW+J0uafPWJ6xUQRSQDm8seiBHueQGmKI=";
   };
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
   installPhase = ''
+    runHook preInstall
+
     mkdir -p $out/share
-    mv * $out/share/
+    mv -- * $out/share/
 
     for lt in languagetool{,-commandline,-server};do
       makeWrapper ${jre}/bin/java $out/bin/$lt \
@@ -22,14 +24,15 @@ stdenv.mkDerivation rec {
 
     makeWrapper ${jre}/bin/java $out/bin/languagetool-http-server \
       --add-flags "-cp $out/share/languagetool-server.jar org.languagetool.server.HTTPServer"
+
+    runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://languagetool.org;
+  meta = with lib; {
+    homepage = "https://languagetool.org";
     license = licenses.lgpl21Plus;
-    maintainers = with maintainers; [
-      edwtjo
-    ];
+    maintainers = with maintainers; [ edwtjo ];
+    platforms = jre.meta.platforms;
     description = "A proofreading program for English, French German, Polish, and more";
   };
 }

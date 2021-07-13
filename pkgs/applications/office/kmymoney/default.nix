@@ -8,29 +8,26 @@
 , sqlcipher
 
 # Needed for running tests:
-, qtbase, xvfb_run
+, qtbase, xvfb-run
 
-# For weboob, which only supports Python 2.x:
-, python2Packages
+, python2, python3Packages
 }:
 
 stdenv.mkDerivation rec {
   pname = "kmymoney";
-  version = "5.0.5";
+  version = "5.1.1";
 
   src = fetchurl {
     url = "mirror://kde/stable/kmymoney/${version}/src/${pname}-${version}.tar.xz";
-    sha256 = "1hghs4676kn2giwpwz1y7p6djpmi41x64idf3ybiz8ky14a5s977";
+    sha256 = "sha256-33ufeOhZb5nSgpXKc4cI8GVe4Fd4nf2SHHsbq5ZXgpg=";
   };
 
   # Hidden dependency that wasn't included in CMakeLists.txt:
   NIX_CFLAGS_COMPILE = "-I${kitemmodels.dev}/include/KF5";
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
-    doxygen extra-cmake-modules graphviz kdoctools python2Packages.wrapPython
-    wrapQtAppsHook
+    doxygen extra-cmake-modules graphviz kdoctools python2
+    python3Packages.wrapPython wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -41,10 +38,10 @@ stdenv.mkDerivation rec {
 
     # Put it into buildInputs so that CMake can find it, even though we patch
     # it into the interface later.
-    python2Packages.weboob
+    python3Packages.weboob
   ];
 
-  weboobPythonPath = [ python2Packages.weboob ];
+  weboobPythonPath = [ python3Packages.weboob ];
 
   postInstall = ''
     buildPythonPath "$weboobPythonPath"
@@ -58,7 +55,7 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = stdenv.hostPlatform == stdenv.buildPlatform;
-  installCheckInputs = [ xvfb_run ];
+  installCheckInputs = [ xvfb-run ];
   installCheckPhase =
     lib.optionalString doInstallCheck ''
       xvfb-run -s '-screen 0 1024x768x24' make test \
@@ -67,7 +64,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Personal finance manager for KDE";
-    homepage = https://kmymoney.org/;
+    homepage = "https://kmymoney.org/";
     platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
   };

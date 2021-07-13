@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, libuuid, autoreconfHook }:
+{ lib, stdenv, fetchurl, libuuid, autoreconfHook }:
 
 let version = "3.6.24"; in
 stdenv.mkDerivation rec {
@@ -14,13 +14,13 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ autoreconfHook ];
   buildInputs = [ libuuid ];
 
-  NIX_CFLAGS_COMPILE = "-std=gnu90";
+  NIX_CFLAGS_COMPILE = [ "-std=gnu90" "-D_GNU_SOURCE" ];
 
   meta = {
     inherit version;
-    homepage = http://www.namesys.com/;
+    homepage = "http://www.namesys.com/";
     description = "ReiserFS utilities";
-    license = stdenv.lib.licenses.gpl2;
-    platforms = stdenv.lib.platforms.linux;
+    license = lib.licenses.gpl2;
+    platforms = lib.platforms.linux;
   };
 }

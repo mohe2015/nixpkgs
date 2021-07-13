@@ -1,26 +1,26 @@
-{ fetchFromGitHub, stdenv, pkgconfig, autoreconfHook
+{ fetchFromGitHub, lib, stdenv, pkg-config, autoreconfHook, wrapQtAppsHook ? null
 , openssl, db48, boost, zlib, miniupnpc, gmp
 , qrencode, glib, protobuf, yasm, libevent
-, utillinux, qtbase ? null, qttools ? null
+, util-linux, qtbase ? null, qttools ? null
 , enableUpnp ? false
 , disableWallet ? false
-, disableDaemon ? false 
+, disableDaemon ? false
 , withGui ? false }:
 
-with stdenv.lib;
+with lib;
 stdenv.mkDerivation rec {
-  pname = "pivx";
-  version = "3.2.0";
+  name = "pivx-${version}";
+  version = "4.1.1";
 
   src = fetchFromGitHub {
     owner = "PIVX-Project";
     repo= "PIVX";
     rev = "v${version}";
-    sha256 = "1sym6254vhq8qqpxq9qhy10m5167v7x93kqaj1gixc1vwwbxyazy";
+    sha256 = "03ndk46h6093v8s18d5iffz48zhlshq7jrk6vgpjfs6z2iqgd2sy";
   };
 
-  nativeBuildInputs = [ pkgconfig autoreconfHook ];
-  buildInputs = [ glib gmp openssl db48 yasm boost zlib libevent miniupnpc protobuf utillinux ]
+  nativeBuildInputs = [ pkg-config autoreconfHook ] ++ optionals withGui [ wrapQtAppsHook ];
+  buildInputs = [ glib gmp openssl db48 yasm boost zlib libevent miniupnpc protobuf util-linux ]
                   ++ optionals withGui [ qtbase qttools qrencode ];
 
   configureFlags = [ "--with-boost-libdir=${boost.out}/lib" ]
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
                     ++ optionals withGui [ "--with-gui=yes"
                                            "--with-qt-bindir=${qtbase.dev}/bin:${qttools.dev}/bin"
                                          ];
-  
+
   enableParallelBuilding = true;
   doChecks = true;
   postBuild = ''
@@ -39,7 +39,12 @@ stdenv.mkDerivation rec {
     cp share/pixmaps/*128.png $out/share/icons/
   '';
 
-  meta = with stdenv.lib; {
+  doInstallCheck = true;
+  installCheckPhase = ''
+    $out/bin/test_pivx
+  '';
+
+  meta = with lib; {
     description = "An open source crypto-currency focused on fast private transactions";
     longDescription = ''
       PIVX is an MIT licensed, open source, blockchain-based cryptocurrency with
@@ -47,15 +52,8 @@ stdenv.mkDerivation rec {
       Zero Knowledge cryptography proofs for industry-leading transaction anonymity.
     '';
     license = licenses.mit;
-    homepage = https://www.dash.org;
+    homepage = "https://pivx.org";
     maintainers = with maintainers; [ wucke13 ];
     platforms = platforms.unix;
-
-    # upstream doesn't support newer openssl versions
-    # https://github.com/PIVX-Project/PIVX/issues/748
-    # "Your system is most probably using openssl 1.1 which is not the
-    # officialy supported version. Either use 1.0.1 or run again configure
-    # with the given option."
-    broken = true;
   };
 }

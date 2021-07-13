@@ -1,23 +1,48 @@
-{ stdenv, fetchgit, fetchNodeModules, buildPythonPackage
-, pgpy, flask, bleach, misaka, humanize, markdown, psycopg2, pygments, requests
-, sqlalchemy, flask_login, beautifulsoup4, sqlalchemy-utils, celery, alembic
-, sassc, nodejs-11_x
-, writeText }:
+{ lib
+, fetchgit
+, fetchNodeModules
+, buildPythonPackage
+, pgpy
+, flask
+, bleach
+, misaka
+, humanize
+, html5lib
+, markdown
+, psycopg2
+, pygments
+, requests
+, sqlalchemy
+, cryptography
+, beautifulsoup4
+, sqlalchemy-utils
+, prometheus_client
+, celery
+, alembic
+, importlib-metadata
+, mistletoe
+, minio
+, sassc
+, nodejs
+, redis
+, writeText
+}:
 
 buildPythonPackage rec {
   pname = "srht";
-  version = "0.52.13";
+  version = "0.67.4";
 
   src = fetchgit {
     url = "https://git.sr.ht/~sircmpwn/core.sr.ht";
     rev = version;
-    sha256 = "0i7gd2rkq4y4lffxsgb3mql9ddmk3vqckan29w266imrqs6p8c0z";
+    sha256 = "sha256-XvzFfcBK5Mq8p7xEBAF/eupUE1kkUBh5k+ByM/WA9bc=";
+    fetchSubmodules = true;
   };
 
   node_modules = fetchNodeModules {
     src = "${src}/srht";
-    nodejs = nodejs-11_x;
-    sha256 = "0axl50swhcw8llq8z2icwr4nkr5qsw2riih0a040f9wx4xiw4p6p";
+    nodejs = nodejs;
+    sha256 = "sha256-IWKahdWv3qJ5DNyb1GB9JWYkZxghn6wzZe68clYXij8=";
   };
 
   patches = [
@@ -26,7 +51,7 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [
     sassc
-    nodejs-11_x
+    nodejs
   ];
 
   propagatedBuildInputs = [
@@ -35,18 +60,24 @@ buildPythonPackage rec {
     bleach
     misaka
     humanize
+    html5lib
     markdown
     psycopg2
     pygments
     requests
+    mistletoe
     sqlalchemy
-    flask_login
+    cryptography
     beautifulsoup4
     sqlalchemy-utils
+    prometheus_client
 
     # Unofficial runtime dependencies?
     celery
     alembic
+    importlib-metadata
+    minio
+    redis
   ];
 
   PKGVER = version;
@@ -55,24 +86,10 @@ buildPythonPackage rec {
     cp -r ${node_modules} srht/node_modules
   '';
 
-  # No actual? tests but seems like it needs this anyway
-  preCheck = let
-    config = writeText "config.ini" ''
-      [webhooks]
-      private-key=K6JupPpnr0HnBjelKTQUSm3Ro9SgzEA2T2Zv472OvzI=
+  dontUseSetuptoolsCheck = true;
 
-      [meta.sr.ht]
-      origin=http://meta.sr.ht.local
-    '';
-  in ''
-    # Validation needs config option(s)
-    # webhooks <- ( private-key )
-    # meta.sr.ht <- ( origin )
-    cp ${config} config.ini
-  '';
-
-  meta = with stdenv.lib; {
-    homepage = https://git.sr.ht/~sircmpwn/srht;
+  meta = with lib; {
+    homepage = "https://git.sr.ht/~sircmpwn/srht";
     description = "Core modules for sr.ht";
     license = licenses.bsd3;
     maintainers = with maintainers; [ eadwu ];

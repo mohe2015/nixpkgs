@@ -1,33 +1,37 @@
-{ stdenv, fetchFromGitHub
-, pkgconfig, autoreconfHook
+{ lib, stdenv, mkDerivation, fetchFromGitHub
+, pkg-config, autoreconfHook
 , openssl, db48, boost, zlib, miniupnpc
-, glib, protobuf, utillinux, qt4, qrencode
+, glib, protobuf, util-linux, qrencode
 , AppKit
 , withGui ? true, libevent
+, qtbase, qttools
+, zeromq
 }:
 
-with stdenv.lib;
+with lib;
 
-stdenv.mkDerivation rec {
+mkDerivation rec {
 
   name = "litecoin" + (toString (optional (!withGui) "d")) + "-" + version;
-  version = "0.16.3";
+  version = "0.18.1";
 
   src = fetchFromGitHub {
     owner = "litecoin-project";
     repo = "litecoin";
     rev = "v${version}";
-    sha256 = "0vc184qfdkjky1qffa7309k6973k4197bkzwcmffc9r5sdfhrhkp";
+    sha256 = "11753zhyx1kmrlljc6kbjwrcb06dfcrsqvmw3iaki9a132qk6l5c";
   };
 
-  nativeBuildInputs = [ pkgconfig autoreconfHook ];
-  buildInputs = [ openssl db48 boost zlib
-                  miniupnpc glib protobuf utillinux libevent ]
+  nativeBuildInputs = [ pkg-config autoreconfHook ];
+  buildInputs = [ openssl db48 boost zlib zeromq
+                  miniupnpc glib protobuf util-linux libevent ]
                   ++ optionals stdenv.isDarwin [ AppKit ]
-                  ++ optionals withGui [ qt4 qrencode ];
+                  ++ optionals withGui [ qtbase qttools qrencode ];
 
   configureFlags = [ "--with-boost-libdir=${boost.out}/lib" ]
-                     ++ optionals withGui [ "--with-gui=qt4" ];
+                   ++ optionals withGui [
+                      "--with-gui=qt5"
+                      "--with-qt-bindir=${qtbase.dev}/bin:${qttools.dev}/bin" ];
 
   enableParallelBuilding = true;
 
@@ -42,10 +46,10 @@ stdenv.mkDerivation rec {
       the regular computers and GPUs most people already have.
       The Litecoin network is scheduled to produce 84 million currency units.
     '';
-    homepage = https://litecoin.org/;
+    homepage = "https://litecoin.org/";
     platforms = platforms.unix;
     license = licenses.mit;
     broken = stdenv.isDarwin;
-    maintainers = with maintainers; [ offline AndersonTorres ];
+    maintainers = with maintainers; [ offline ];
   };
 }

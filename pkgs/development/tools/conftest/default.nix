@@ -2,33 +2,40 @@
 
 buildGoModule rec {
   pname = "conftest";
-  version = "0.12.0";
+  version = "0.25.0";
 
   src = fetchFromGitHub {
-    owner = "instrumenta";
+    owner = "open-policy-agent";
     repo = "conftest";
     rev = "v${version}";
-    sha256 = "0blrbbnvnnxyw0idhglqdz16i7g6g86a6kw2iw707bg0yfdl1ncq";
+    sha256 = "sha256-pxPqBUOsXbP9giaV5NS3a6Z6auN4vUTIrIKcNh8xURU=";
   };
 
-  patches = [
-    # Version 0.12.0 does not build with go 1.13. See https://github.com/instrumenta/conftest/pull/85.
-    # TODO: Remove once https://github.com/instrumenta/conftest/pull/85 is merged and lands in a release.
-    ./go-1.13-deps.patch
+  vendorSha256 = "sha256-y8DRrthaUzMKxFbdbASvqsRMT+jex7jMJA6g7YF/VxI=";
+
+  doCheck = false;
+
+  buildFlagsArray = [
+    "-ldflags="
+    "-s"
+    "-w"
+    "-X github.com/open-policy-agent/conftest/internal/commands.version=${version}"
   ];
-
-  buildFlagsArray = ''
-    -ldflags=
-        -X main.version=${version}
-  '';
-
-  modSha256 = "11999ywy73ng45gl1qypky8342jvishcp11bdxbigvqhwl2zbpav";
 
   meta = with lib; {
     description = "Write tests against structured configuration data";
-    homepage = https://github.com/instrumenta/conftest;
+    longDescription = ''
+      Conftest helps you write tests against structured configuration data.
+      Using Conftest you can write tests for your Kubernetes configuration,
+      Tekton pipeline definitions, Terraform code, Serverless configs or any
+      other config files.
+
+      Conftest uses the Rego language from Open Policy Agent for writing the
+      assertions. You can read more about Rego in 'How do I write policies' in
+      the Open Policy Agent documentation.
+    '';
+    inherit (src.meta) homepage;
     license = licenses.asl20;
     maintainers = with maintainers; [ yurrriq ];
-    platforms = platforms.all;
   };
 }

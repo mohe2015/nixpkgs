@@ -1,5 +1,5 @@
-{ stdenv, fetchurl, gettext, pkgconfig, glib, libnotify, gtk3, libgee
-, keybinder3, json-glib, zeitgeist, vala, hicolor-icon-theme, gobject-introspection
+{ lib, stdenv, fetchurl, gettext, pkg-config, glib, libnotify, gtk3, libgee
+, keybinder3, json-glib, zeitgeist, vala, gobject-introspection
 }:
 
 let
@@ -14,23 +14,22 @@ in stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [
-    pkgconfig gettext vala
+    pkg-config gettext vala
     # For setup hook
     gobject-introspection
   ];
   buildInputs = [
     glib libnotify gtk3 libgee keybinder3 json-glib zeitgeist
-    hicolor-icon-theme
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     longDescription = ''
       Semantic launcher written in Vala that you can use to start applications
       as well as find and access relevant documents and files by making use of
       the Zeitgeist engine
     '';
     description = "Semantic launcher to start applications and find relevant files";
-    homepage = https://launchpad.net/synapse-project;
+    homepage = "https://launchpad.net/synapse-project";
     license = licenses.gpl3;
     maintainers = with maintainers; [ mahe ];
     platforms = with platforms; all;

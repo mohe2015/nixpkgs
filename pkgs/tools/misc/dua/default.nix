@@ -1,23 +1,31 @@
-{ lib, rustPlatform, fetchFromGitHub }:
+{ lib, stdenv, rustPlatform, fetchFromGitHub, libiconv }:
 
 rustPlatform.buildRustPackage rec {
   pname = "dua";
-  version = "2.1.11";
+  version = "2.13.1";
+
+  buildInputs = lib.optionals stdenv.isDarwin [ libiconv ];
 
   src = fetchFromGitHub {
     owner = "Byron";
     repo = "dua-cli";
     rev = "v${version}";
-    sha256 = "08zgi2yiynb20l1f9rhly4a7zgqnr7lq3cr5vkmh1jnfs6z27dv6";
+    sha256 = "sha256-6xSRsLM1DD1xMjOGzHMDVLibrJlu9lN9OoSV7B/WMT0=";
+    # Remove unicode file names which leads to different checksums on HFS+
+    # vs. other filesystems because of unicode normalisation.
+    extraPostFetch = ''
+      rm -r $out/tests/fixtures
+    '';
   };
 
-  cargoSha256 = "0ca9gaih0b9qg7bdgyhvb9gr1mq23r62pi0845vwc216jfaag079";
+  cargoSha256 = "sha256-udz1EtPchEHxkvvVFnkwSOpFz4XEBGOXRz8qWREyzvc=";
+
+  doCheck = false;
 
   meta = with lib; {
     description = "A tool to conveniently learn about the disk usage of directories, fast!";
     homepage = "https://github.com/Byron/dua-cli";
     license = with licenses; [ mit ];
     maintainers = with maintainers; [ killercup ];
-    platforms = platforms.all;
   };
 }

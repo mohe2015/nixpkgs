@@ -1,22 +1,41 @@
-{ stdenv, buildPythonPackage, fetchPypi, requests, six, mock, httmock }:
+{ lib
+, buildPythonPackage
+, pythonOlder
+, fetchPypi
+, argcomplete
+, requests
+, requests-toolbelt
+, pyyaml
+}:
 
 buildPythonPackage rec {
-  pname   = "python-gitlab";
-  version = "1.9.0";
+  pname = "python-gitlab";
+  version = "2.9.0";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1p0i6gsl4mcv6w1sm0rsxq9bq2cmmg3n7c0dniqlvqmzkk62qqhx";
+    sha256 = "sha256-LFGxTN2aaAKDFaKw6IUl03YJZziPmfqlfeiQK0VGW+Y=";
   };
 
-  propagatedBuildInputs = [ requests six ];
+  propagatedBuildInputs = [
+    argcomplete
+    pyyaml
+    requests
+    requests-toolbelt
+  ];
 
-  checkInputs = [ mock httmock ];
+  # tests rely on a gitlab instance on a local docker setup
+  doCheck = false;
 
-  meta = with stdenv.lib; {
+  pythonImportsCheck = [
+    "gitlab"
+  ];
+
+  meta = with lib; {
     description = "Interact with GitLab API";
-    homepage    = https://github.com/python-gitlab/python-gitlab;
-    license     = licenses.lgpl3;
+    homepage = "https://github.com/python-gitlab/python-gitlab";
+    license = licenses.lgpl3;
     maintainers = with maintainers; [ nyanloutre ];
   };
 }

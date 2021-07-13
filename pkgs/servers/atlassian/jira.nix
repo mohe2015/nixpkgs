@@ -1,18 +1,19 @@
-{ stdenv, lib, fetchurl
+{ stdenv
+, lib
+, fetchurl
+, gawk
 , enableSSO ? false
 , crowdProperties ? null
 }:
 
 stdenv.mkDerivation rec {
   pname = "atlassian-jira";
-  version = "8.3.2";
+  version = "8.16.1";
 
   src = fetchurl {
     url = "https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-software-${version}.tar.gz";
-    sha256 = "0cqj7al9892psc5zqpfvj0gnjf8b4dpm2kx7sr21grczss1dkcs1";
+    sha256 = "sha256-0J+P4E9hYPbYBb6qvtBjH1jhKrDW187+309YBHORNZA=";
   };
-
-  phases = [ "unpackPhase" "buildPhase" "installPhase" "fixupPhase" ];
 
   buildPhase = ''
     mv conf/server.xml conf/server.xml.dist
@@ -20,6 +21,8 @@ stdenv.mkDerivation rec {
     rm -r logs; ln -sf /run/atlassian-jira/logs/ .
     rm -r work; ln -sf /run/atlassian-jira/work/ .
     rm -r temp; ln -sf /run/atlassian-jira/temp/ .
+    substituteInPlace bin/check-java.sh \
+      --replace "awk" "${gawk}/bin/gawk"
   '' + lib.optionalString enableSSO ''
     substituteInPlace atlassian-jira/WEB-INF/classes/seraph-config.xml \
       --replace com.atlassian.jira.security.login.JiraSeraphAuthenticator \
@@ -34,9 +37,9 @@ stdenv.mkDerivation rec {
     cp -rva . $out
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Proprietary issue tracking product, also providing project management functions";
-    homepage = https://www.atlassian.com/software/jira;
+    homepage = "https://www.atlassian.com/software/jira";
     license = licenses.unfree;
     maintainers = with maintainers; [ fpletz globin ciil ];
   };

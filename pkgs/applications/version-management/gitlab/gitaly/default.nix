@@ -1,9 +1,13 @@
-{ stdenv, fetchFromGitLab, buildGoPackage, ruby, bundlerEnv, pkgconfig, libgit2 }:
+{ lib, fetchFromGitLab, fetchFromGitHub, buildGoModule, ruby
+, bundlerEnv, pkg-config
+# libgit2 + dependencies
+, libgit2, openssl, zlib, pcre, http-parser }:
 
 let
   rubyEnv = bundlerEnv rec {
     name = "gitaly-env";
     inherit ruby;
+    copyGemFiles = true;
     gemdir = ./.;
     gemset =
       let x = import (gemdir + "/gemset.nix");
@@ -16,46 +20,40 @@ let
         };
       };
   };
-in buildGoPackage rec {
-  version = "1.53.2";
+in buildGoModule rec {
+  version = "14.0.5";
   pname = "gitaly";
 
   src = fetchFromGitLab {
     owner = "gitlab-org";
     repo = "gitaly";
     rev = "v${version}";
-    sha256 = "0x4dhqaxx6n5jlcvf69rglxiz11037ghgcnskks6qnlcbkd85j3d";
+    sha256 = "sha256-aZ+EDF9BOdsbE+Xsde259eRmQhnb6H5piLQsvzgVpGM=";
   };
 
-  goPackagePath = "gitlab.com/gitlab-org/gitaly";
+  vendorSha256 = "sha256-U962bMmXNnenCYkSdk0Uy7Bz+b9JGU5rJHfblZoyC/I=";
 
   passthru = {
     inherit rubyEnv;
   };
 
-  nativeBuildInputs = [ pkgconfig ];
-  buildInputs = [ rubyEnv.wrappedRuby libgit2 ];
-  goDeps = ./deps.nix;
-  preBuild = "rm -r go/src/gitlab.com/gitlab-org/labkit/vendor";
+  buildFlags = [ "-tags=static,system_libgit2" ];
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ rubyEnv.wrappedRuby libgit2 openssl zlib pcre http-parser ];
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $ruby
-    cp -rv $src/ruby/{bin,lib,git-hooks,gitlab-shell} $ruby
-
-    # gitlab-shell will try to read its config relative to the source
-    # code by default which doesn't work in nixos because it's a
-    # read-only filesystem
-    substituteInPlace $ruby/gitlab-shell/lib/gitlab_config.rb --replace \
-       "File.join(ROOT_PATH, 'config.yml')" \
-       "'/run/gitlab/shell-config.yml'"
+    cp -rv $src/ruby/{bin,lib,proto,git-hooks} $ruby
   '';
 
-  outputs = [ "bin" "out" "ruby" ];
+  outputs = [ "out" "ruby" ];
 
-  meta = with stdenv.lib; {
-    homepage = http://www.gitlab.com/;
-    platforms = platforms.unix;
-    maintainers = with maintainers; [ roblabla globin fpletz ];
+  meta = with lib; {
+    homepage = "https://gitlab.com/gitlab-org/gitaly";
+    description = "A Git RPC service for handling all the git calls made by GitLab";
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ roblabla globin fpletz talyz ];
     license = licenses.mit;
   };
 }

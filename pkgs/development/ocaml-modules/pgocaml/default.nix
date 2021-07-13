@@ -1,34 +1,26 @@
-{ stdenv, fetchFromGitHub, ocaml, findlib, ocamlbuild, camlp4
-, ppx_tools_versioned, result, rresult
-, calendar, csv, hex, re
+{ lib, fetchFromGitHub, buildDunePackage
+, calendar, csv, hex, ppx_deriving, ppx_sexp_conv, re, rresult, sexplib
 }:
 
-if !stdenv.lib.versionAtLeast ocaml.version "4.05"
-then throw "pgocaml is not available for OCaml ${ocaml.version}"
-else
-
-stdenv.mkDerivation rec {
-  name = "ocaml${ocaml.version}-pgocaml-${version}";
-  version = "3.2";
+buildDunePackage rec {
+  pname = "pgocaml";
+  version = "4.2.2-dev-20210111";
   src = fetchFromGitHub {
     owner = "darioteixeira";
     repo = "pgocaml";
-    rev = "v${version}";
-    sha256 = "0jxzr5niv8kdh90pr57b1qb500zkkasxb8b8l7w9cydcfprnlk24";
+    rev = "1bb0025deeb3d14029afdcc69aaa7847026e243e";
+    sha256 = "11inbjf87gclc2xmpq56ag4cm4467y9q9hjgbdn69fa1bman2zn2";
   };
 
-  buildInputs = [ ocaml findlib ocamlbuild camlp4 ppx_tools_versioned result rresult ];
-  propagatedBuildInputs = [ calendar csv hex re ];
+  minimumOCamlVersion = "4.08";
+  useDune2 = true;
 
-  configureFlags = [ "--enable-p4" "--enable-ppx" ];
+  propagatedBuildInputs = [ calendar csv hex ppx_deriving ppx_sexp_conv re rresult sexplib ];
 
-  createFindlibDestdir = true;
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "An interface to PostgreSQL databases for OCaml applications";
-    homepage = http://pgocaml.forge.ocamlcore.org/;
+    inherit (src.meta) homepage;
     license = licenses.lgpl2;
     maintainers = with maintainers; [ vbgl ];
-    inherit (ocaml.meta) platforms;
   };
 }

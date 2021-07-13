@@ -1,17 +1,15 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
-, pkgconfig
+, pkg-config
 , cmake
 , zlib
-, fetchpatch
 , dbus
 , networkmanager
-, spidermonkey_38
+, spidermonkey_68
 , pcre
 , gsettings-desktop-schemas
 , glib
 , makeWrapper
-, python2
 , python3
 , SystemConfiguration
 , CoreFoundation
@@ -20,26 +18,25 @@
 
 stdenv.mkDerivation rec {
   pname = "libproxy";
-  version = "0.4.15";
+  version = "0.4.17";
 
   src = fetchFromGitHub {
     owner = "libproxy";
     repo = "libproxy";
     rev = version;
-    sha256 = "10swd3x576pinx33iwsbd4h15fbh2snmfxzcmab4c56nb08qlbrs";
+    sha256 = "0v8q4ln0pd5231kidpi8wpwh0chcjwcmawcki53czlpdrc09z96r";
   };
 
-  outputs = [ "out" "dev" "py2" "py3" ];
+  outputs = [ "out" "dev" "py3" ];
 
   nativeBuildInputs = [
-    pkgconfig
+    pkg-config
     cmake
     makeWrapper
   ];
 
   buildInputs = [
     pcre
-    python2
     python3
     zlib
   ] ++ (if stdenv.hostPlatform.isDarwin then [
@@ -48,35 +45,28 @@ stdenv.mkDerivation rec {
     JavaScriptCore
   ] else [
     glib
-    spidermonkey_38
+    spidermonkey_68
     dbus
     networkmanager
   ]);
 
   cmakeFlags = [
     "-DWITH_MOZJS=ON"
-    "-DPYTHON2_SITEPKG_DIR=${placeholder "py2"}/${python2.sitePackages}"
+    "-DWITH_PYTHON2=OFF"
     "-DPYTHON3_SITEPKG_DIR=${placeholder "py3"}/${python3.sitePackages}"
   ];
 
-  patches = stdenv.lib.optionals stdenv.isDarwin [
-    (fetchpatch {
-      url = "https://github.com/libproxy/libproxy/commit/44158f03f8522116758d335688ed840dfcb50ac8.patch";
-      sha256 = "0axfvb6j7gcys6fkwi9dkn006imhvm3kqr83gpwban8419n0q5v1";
-    })
-  ];
-
-  postFixup = ''
+  postFixup = lib.optionalString stdenv.isLinux ''
     # config_gnome3 uses the helper to find GNOME proxy settings
     wrapProgram $out/libexec/pxgsettings --prefix XDG_DATA_DIRS : "${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}"
   '';
 
   doCheck = false; # fails 1 out of 10 tests
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     platforms = platforms.linux ++ platforms.darwin;
     license = licenses.lgpl21;
-    homepage = http://libproxy.github.io/libproxy/;
+    homepage = "http://libproxy.github.io/libproxy/";
     description = "A library that provides automatic proxy configuration management";
   };
 }

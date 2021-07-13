@@ -1,53 +1,57 @@
-{ stdenv, buildPythonPackage, fetchPypi, isPy3k, pythonOlder
+{ stdenv, lib, buildPythonPackage, fetchPypi, isPy3k, pythonOlder
 , attrs, click, cligj, click-plugins, six, munch, enum34
-, pytest, boto3, mock
-, gdal_2 # can't bump to 3 yet, https://github.com/Toblerity/Fiona/issues/745
+, pytestCheckHook, boto3, mock, giflib, pytz
+, gdal
+, certifi
 }:
 
 buildPythonPackage rec {
   pname = "Fiona";
-  version = "1.8.6";
+  version = "1.8.20";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0gpvdrayam4qvpqvz0911nlyvf7ib3slsyml52qx172vhpldycgs";
+    sha256 = "a70502d2857b82f749c09cb0dea3726787747933a2a1599b5ab787d74e3c143b";
   };
 
-  CXXFLAGS = stdenv.lib.optionalString stdenv.cc.isClang "-std=c++11";
+  CXXFLAGS = lib.optionalString stdenv.cc.isClang "-std=c++11";
 
   nativeBuildInputs = [
-    gdal_2 # for gdal-config
+    gdal # for gdal-config
   ];
 
   buildInputs = [
-    gdal_2
-  ];
+    gdal
+  ] ++ lib.optionals stdenv.cc.isClang [ giflib ];
 
   propagatedBuildInputs = [
     attrs
+    certifi
     click
     cligj
     click-plugins
     six
     munch
-  ] ++ stdenv.lib.optional (!isPy3k) enum34;
+    pytz
+  ] ++ lib.optional (!isPy3k) enum34;
 
   checkInputs = [
-    pytest
+    pytestCheckHook
     boto3
-  ] ++ stdenv.lib.optional (pythonOlder "3.4") mock;
+  ] ++ lib.optional (pythonOlder "3.4") mock;
 
-  checkPhase = ''
+  preCheck = ''
     rm -r fiona # prevent importing local fiona
-    # Some tests access network, others test packaging
-    pytest -k "not test_*_http \
-           and not test_*_https \
-           and not test_*_wheel"
   '';
 
-  meta = with stdenv.lib; {
+  disabledTests = [
+    # Some tests access network, others test packaging
+    "http" "https" "wheel"
+  ];
+
+  meta = with lib; {
     description = "OGR's neat, nimble, no-nonsense API for Python";
-    homepage = http://toblerity.org/fiona/;
+    homepage = "https://fiona.readthedocs.io/";
     license = licenses.bsd3;
     maintainers = with maintainers; [ knedlsepp ];
   };

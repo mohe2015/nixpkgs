@@ -1,17 +1,20 @@
-{ stdenv, fetchurl, alsaLib }:
+{ lib, stdenv, fetchurl, alsa-lib, fixDarwinDylibNames }:
 
 stdenv.mkDerivation rec {
   pname = "sndio";
-  version = "1.6.0";
-  enableParallelBuilding = true;
-  buildInputs = [ alsaLib ];
+  version = "1.8.0";
 
   src = fetchurl {
     url = "http://www.sndio.org/sndio-${version}.tar.gz";
-    sha256 = "1havdx3q4mipgddmd2bnygr1yh6y64567m1yqwjapkhsq550dq4r";
+    sha256 = "027hlqji0h2cm96rb8qvkdmwxl56l59bgn828nvmwak2c2i5k703";
   };
 
-  meta = with stdenv.lib; {
+  nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+  buildInputs = lib.optional stdenv.hostPlatform.isLinux alsa-lib;
+
+  enableParallelBuilding = true;
+
+  meta = with lib; {
     homepage = "http://www.sndio.org";
     description = "Small audio and MIDI framework part of the OpenBSD project";
     license = licenses.isc;

@@ -32,7 +32,7 @@ let
     'dbcollation' => 'utf8mb4_unicode_ci',
   );
 
-  $CFG->wwwroot   = '${if cfg.virtualHost.enableSSL then "https" else "http"}://${cfg.virtualHost.hostName}';
+  $CFG->wwwroot   = '${if cfg.virtualHost.addSSL || cfg.virtualHost.forceSSL || cfg.virtualHost.onlySSL then "https" else "http"}://${cfg.virtualHost.hostName}';
   $CFG->dataroot  = '${stateDir}';
   $CFG->admin     = 'admin';
 
@@ -40,10 +40,12 @@ let
   $CFG->disableupdateautodeploy = true;
 
   $CFG->pathtogs = '${pkgs.ghostscript}/bin/gs';
-  $CFG->pathtophp = '${pkgs.php}/bin/php';
+  $CFG->pathtophp = '${phpExt}/bin/php';
   $CFG->pathtodu = '${pkgs.coreutils}/bin/du';
   $CFG->aspellpath = '${pkgs.aspell}/bin/aspell';
   $CFG->pathtodot = '${pkgs.graphviz}/bin/dot';
+
+  ${cfg.extraConfig}
 
   require_once('${cfg.package}/share/moodle/lib/setup.php');
 
@@ -53,6 +55,9 @@ let
 
   mysqlLocal = cfg.database.createLocally && cfg.database.type == "mysql";
   pgsqlLocal = cfg.database.createLocally && cfg.database.type == "pgsql";
+
+  phpExt = pkgs.php.withExtensions
+        ({ enabled, all }: with all; [ iconv mbstring curl openssl tokenizer xmlrpc soap ctype zip gd simplexml dom  intl json sqlite3 pgsql pdo_sqlite pdo_pgsql pdo_odbc pdo_mysql pdo mysqli session zlib xmlreader fileinfo filter ]);
 in
 {
   # interface
@@ -79,7 +84,7 @@ in
       type = mkOption {
         type = types.enum [ "mysql" "pgsql" ];
         default = "mysql";
-        description = ''Database engine to use.'';
+        description = "Database engine to use.";
       };
 
       host = mkOption {
@@ -138,19 +143,15 @@ in
     };
 
     virtualHost = mkOption {
-      type = types.submodule ({
-        options = import ../web-servers/apache-httpd/per-server-options.nix {
-          inherit lib;
-          forMainServer = false;
-        };
-      });
-      example = {
-        hostName = "moodle.example.org";
-        enableSSL = true;
-        adminAddr = "webmaster@example.org";
-        sslServerCert = "/var/lib/acme/moodle.example.org/full.pem";
-        sslServerKey = "/var/lib/acme/moodle.example.org/key.pem";
-      };
+      type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
+      example = literalExample ''
+        {
+          hostName = "moodle.example.org";
+          adminAddr = "webmaster@example.org";
+          forceSSL = true;
+          enableACME = true;
+        }
+      '';
       description = ''
         Apache configuration can be done by adapting <option>services.httpd.virtualHosts</option>.
         See <xref linkend="opt-services.httpd.virtualHosts"/> for further information.
@@ -170,6 +171,19 @@ in
       description = ''
         Options for the Moodle PHP pool. See the documentation on <literal>php-fpm.conf</literal>
         for details on configuration directives.
+      '';
+    };
+
+    extraConfig = mkOption {
+      type = types.lines;
+      default = "";
+      description = ''
+        Any additional text to be appended to the config.php
+        configuration file. This is a PHP script. For configuration
+        details, see <link xlink:href="https://docs.moodle.org/37/en/Configuration_file"/>.
+      '';
+      example = ''
+        $CFG->disableupdatenotifications = true;
       '';
     };
   };
@@ -211,6 +225,7 @@ in
 
     services.phpfpm.pools.moodle = {
       inherit user group;
+      phpPackage = phpExt;
       phpEnv.MOODLE_CONFIG = "${moodleConfig}";
       phpOptions = ''
         zend_extension = opcache.so
@@ -226,22 +241,20 @@ in
       enable = true;
       adminAddr = mkDefault cfg.virtualHost.adminAddr;
       extraModules = [ "proxy_fcgi" ];
-      virtualHosts = [ (mkMerge [
-        cfg.virtualHost {
-          documentRoot = mkForce "${cfg.package}/share/moodle";
-          extraConfig = ''
-            <Directory "${cfg.package}/share/moodle">
-              <FilesMatch "\.php$">
-                <If "-f %{REQUEST_FILENAME}">
-                  SetHandler "proxy:unix:${fpm.socket}|fcgi://localhost/"
-                </If>
-              </FilesMatch>
-              Options -Indexes
-              DirectoryIndex index.php
-            </Directory>
-          '';
-        }
-      ]) ];
+      virtualHosts.${cfg.virtualHost.hostName} = mkMerge [ cfg.virtualHost {
+        documentRoot = mkForce "${cfg.package}/share/moodle";
+        extraConfig = ''
+          <Directory "${cfg.package}/share/moodle">
+            <FilesMatch "\.php$">
+              <If "-f %{REQUEST_FILENAME}">
+                SetHandler "proxy:unix:${fpm.socket}|fcgi://localhost/"
+              </If>
+            </FilesMatch>
+            Options -Indexes
+            DirectoryIndex index.php
+          </Directory>
+        '';
+      } ];
     };
 
     systemd.tmpfiles.rules = [
@@ -254,13 +267,13 @@ in
       after = optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.service";
       environment.MOODLE_CONFIG = moodleConfig;
       script = ''
-        ${pkgs.php}/bin/php ${cfg.package}/share/moodle/admin/cli/check_database_schema.php && rc=$? || rc=$?
+        ${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/check_database_schema.php && rc=$? || rc=$?
 
-        [ "$rc" == 1 ] && ${pkgs.php}/bin/php ${cfg.package}/share/moodle/admin/cli/upgrade.php \
+        [ "$rc" == 1 ] && ${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/upgrade.php \
           --non-interactive \
           --allow-unstable
 
-        [ "$rc" == 2 ] && ${pkgs.php}/bin/php ${cfg.package}/share/moodle/admin/cli/install_database.php \
+        [ "$rc" == 2 ] && ${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/install_database.php \
           --agree-license \
           --adminpass=${cfg.initialPassword}
 
@@ -280,7 +293,7 @@ in
       serviceConfig = {
         User = user;
         Group = group;
-        ExecStart = "${pkgs.php}/bin/php ${cfg.package}/share/moodle/admin/cli/cron.php";
+        ExecStart = "${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/cron.php";
       };
     };
 
@@ -294,7 +307,9 @@ in
 
     systemd.services.httpd.after = optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.service";
 
-    users.users.${user}.group = group;
-
+    users.users.${user} = {
+      group = group;
+      isSystemUser = true;
+    };
   };
 }

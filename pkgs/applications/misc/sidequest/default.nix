@@ -1,69 +1,69 @@
 { stdenv, lib, fetchurl, buildFHSUserEnv, makeDesktopItem, makeWrapper, atomEnv, libuuid, at-spi2-atk, icu, openssl, zlib }:
-	let
-		pname = "sidequest";
-		version = "0.3.1";
-		
-		desktopItem = makeDesktopItem rec {
-			name = "SideQuest";
-			exec = "SideQuest";
-			desktopName = name;
-			genericName = "VR App Store";
-			categories = "Settings;PackageManager;";
-		};
+  let
+    pname = "sidequest";
+    version = "0.10.19";
 
-		sidequest = stdenv.mkDerivation {
-			inherit pname version;
+    desktopItem = makeDesktopItem rec {
+      name = "SideQuest";
+      exec = "SideQuest";
+      desktopName = name;
+      genericName = "VR App Store";
+      categories = "Settings;PackageManager;";
+    };
 
-			src = fetchurl {
-				url = "https://github.com/the-expanse/SideQuest/releases/download/${version}/SideQuest-linux-x64.tar.gz";
-				sha256 = "1hj398zzp1x74zhp9rlhqzm9a0ck6zh9bj39g6fpvc38zab5dj1p";
-			};
+    sidequest = stdenv.mkDerivation {
+      inherit pname version;
 
-			buildInputs = [ makeWrapper ];
+      src = fetchurl {
+        url = "https://github.com/SideQuestVR/SideQuest/releases/download/v${version}/SideQuest-${version}.tar.xz";
+        sha256 = "14zqp12nigc4kv6hppyx2s59mmriimnzczay4xi3vh7zcw207px2";
+      };
 
-			buildCommand = ''
-				mkdir -p "$out/lib/SideQuest" "$out/bin"
-				tar -xzf "$src" -C "$out/lib/SideQuest" --strip-components 1
+      nativeBuildInputs = [ makeWrapper ];
 
-				ln -s "$out/lib/SideQuest/SideQuest" "$out/bin"
+      buildCommand = ''
+        mkdir -p "$out/lib/SideQuest" "$out/bin"
+        tar -xJf "$src" -C "$out/lib/SideQuest" --strip-components 1
 
-				fixupPhase
+        ln -s "$out/lib/SideQuest/sidequest" "$out/bin"
 
-				# mkdir -p "$out/share/applications"
-				# ln -s "${desktopItem}/share/applications/*" "$out/share/applications"
+        fixupPhase
 
-				patchelf \
-					--set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
-					--set-rpath "${atomEnv.libPath}/lib:${lib.makeLibraryPath [libuuid at-spi2-atk]}:$out/lib/SideQuest" \
-					"$out/lib/SideQuest/SideQuest"
-			'';
-		};
-	in buildFHSUserEnv {
-		name = "SideQuest";
+        # mkdir -p "$out/share/applications"
+        # ln -s "${desktopItem}/share/applications/*" "$out/share/applications"
 
-		passthru = {
-			inherit pname version;
+        patchelf \
+          --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+          --set-rpath "${atomEnv.libPath}/lib:${lib.makeLibraryPath [libuuid at-spi2-atk]}:$out/lib/SideQuest" \
+          "$out/lib/SideQuest/sidequest"
+      '';
+    };
+  in buildFHSUserEnv {
+    name = "SideQuest";
 
-			meta = with stdenv.lib; {
-				description = "An open app store and side-loading tool for Android-based VR devices such as the Oculus Go, Oculus Quest or Moverio BT 300";
-				homepage = "https://github.com/the-expanse/SideQuest";
-				downloadPage = "https://github.com/the-expanse/SideQuest/releases";
-				license = licenses.mit;
-				maintainers = [ maintainers.joepie91 ];
-				platforms = [ "x86_64-linux" ];
-			};
-		};
-		
-		targetPkgs = pkgs: [
-			sidequest
-			# Needed in the environment on runtime, to make QuestSaberPatch work
-			icu openssl zlib
-		];
+    passthru = {
+      inherit pname version;
 
-		extraInstallCommands = ''
-			mkdir -p "$out/share/applications"
-			ln -s "${desktopItem}/share/applications/*" "$out/share/applications"
-		'';
+      meta = with lib; {
+        description = "An open app store and side-loading tool for Android-based VR devices such as the Oculus Go, Oculus Quest or Moverio BT 300";
+        homepage = "https://github.com/SideQuestVR/SideQuest";
+        downloadPage = "https://github.com/SideQuestVR/SideQuest/releases";
+        license = licenses.mit;
+        maintainers = with maintainers; [ joepie91 rvolosatovs ];
+        platforms = [ "x86_64-linux" ];
+      };
+    };
 
-		runScript = "SideQuest";
-	}
+    targetPkgs = pkgs: [
+      sidequest
+      # Needed in the environment on runtime, to make QuestSaberPatch work
+      icu openssl zlib
+    ];
+
+    extraInstallCommands = ''
+      mkdir -p "$out/share/applications"
+      ln -s ${desktopItem}/share/applications/* "$out/share/applications"
+    '';
+
+    runScript = "sidequest";
+  }

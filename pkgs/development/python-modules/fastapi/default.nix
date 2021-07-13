@@ -1,35 +1,58 @@
 { lib
 , buildPythonPackage
-, fetchPypi
-, uvicorn
-, starlette
+, fetchFromGitHub
 , pydantic
-, python
-, isPy3k
-, which
+, starlette
+, pytestCheckHook
+, pytest-asyncio
+, aiosqlite
+, databases
+, flask
+, httpx
+, passlib
+, peewee
+, python-jose
+, sqlalchemy
 }:
 
 buildPythonPackage rec {
   pname = "fastapi";
-  version = "0.33.0";
-  disabled = !isPy3k;
+  version = "0.65.2";
+  format = "flit";
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "1mc8ljfk6xyn2cq725s8hgapp62z5mylzw9akvkhwwz3bh8m5a7f";
+  src = fetchFromGitHub {
+    owner = "tiangolo";
+    repo = "fastapi";
+    rev = version;
+    sha256 = "032srvbfdy02m1b664x67lkdcx6b2bd4c9a9cb176lscjk213240";
   };
 
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace "starlette ==" "starlette >="
+  '';
+
   propagatedBuildInputs = [
-    uvicorn
     starlette
     pydantic
   ];
 
-  patches = [ ./setup.py.patch ];
+  checkInputs = [
+    aiosqlite
+    databases
+    flask
+    httpx
+    passlib
+    peewee
+    python-jose
+    pytestCheckHook
+    pytest-asyncio
+    sqlalchemy
+  ];
 
-  checkPhase = ''
-    ${python.interpreter} -c "from fastapi import FastAPI; app = FastAPI()"
-  '';
+  # disabled tests require orjson which requires rust nightly
+  pytestFlagsArray = [ "--ignore=tests/test_default_response_class.py" ];
+  disabledTests = [ "test_get_custom_response" ];
 
   meta = with lib; {
     homepage = "https://github.com/tiangolo/fastapi";

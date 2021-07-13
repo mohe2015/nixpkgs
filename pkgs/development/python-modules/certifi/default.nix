@@ -1,21 +1,33 @@
 { lib
-, fetchPypi
 , buildPythonPackage
+, isPy27
+, fetchFromGitHub
+, pytestCheckHook
 }:
 
 buildPythonPackage rec {
   pname = "certifi";
-  version = "2019.6.16";
+  version = "2021.05.30";
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "945e3ba63a0b9f577b1395204e13c3a231f9bc0223888be653286534e5873695";
+  disabled = isPy27;
+
+  src = fetchFromGitHub {
+    owner = pname;
+    repo = "python-certifi";
+    rev = version;
+    sha256 = "1i4ljsc47iac6kl1w4w6x0qia08s9z394z9lbyzc05pm7y8a3cmj";
   };
 
-  meta = {
-    homepage = http://certifi.io/;
+  checkInputs = [
+    pytestCheckHook
+  ];
+
+  pythonImportsCheck = [ "certifi" ];
+
+  meta = with lib; {
+    homepage = "https://certifi.io/";
     description = "Python package for providing Mozilla's CA Bundle";
-    license = lib.licenses.isc;
-    maintainers = with lib.maintainers; [ koral ];
+    license = licenses.isc;
+    maintainers = with maintainers; [ koral ];
   };
 }

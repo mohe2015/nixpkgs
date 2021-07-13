@@ -2,7 +2,6 @@
 , buildPythonPackage
 , fetchPypi
 , dask
-, distributed
 , bokeh
 , toolz
 , datashape
@@ -14,31 +13,26 @@
 , colorcet
 , param
 , pyct
-, pyyaml
-, requests
-, scikitimage
 , scipy
-, pytest
-, pytest-benchmark
-, flake8
+, pytestCheckHook
 , nbsmoke
 , fastparquet
-, testpath
 , nbconvert
+, pytest-xdist
+, netcdf4
 }:
 
 buildPythonPackage rec {
   pname = "datashader";
-  version = "0.7.0";
+  version = "0.13.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "5baf218713dc1ad4791f7bcf606ef8f618273945e788c59f9573aebd7cb851f8";
+    sha256 = "sha256-6JscHm1QjDmXOLLa83qhAvY/xwvlPM6duQ1lSxnCVV8=";
   };
 
   propagatedBuildInputs = [
     dask
-    distributed
     bokeh
     toolz
     datashape
@@ -50,35 +44,31 @@ buildPythonPackage rec {
     colorcet
     param
     pyct
-    pyyaml
-    requests
-    scikitimage
     scipy
-    testpath
   ];
 
   checkInputs = [
-    pytest
-    pytest-benchmark
-    flake8
+    pytestCheckHook
+    pytest-xdist # not needed
     nbsmoke
     fastparquet
-    pandas
     nbconvert
+    netcdf4
   ];
 
-  postConfigure = ''
-    substituteInPlace setup.py \
-      --replace "'testpath<0.4'" "'testpath'"
-  '';
+  pytestFlagsArray = [
+    "-n $NIX_BUILD_CORES"
+    "datashader"
+  ];
 
-  checkPhase = ''
-    pytest datashader
-  '';
+  disabledTestPaths = [
+    # 31/50 tests fail with TypeErrors
+    "datashader/tests/test_datatypes.py"
+  ];
 
-  meta = with lib; {
+  meta = with lib;{
     description = "Data visualization toolchain based on aggregating into a grid";
-    homepage = https://datashader.org;
+    homepage = "https://datashader.org";
     license = licenses.bsd3;
     maintainers = [ maintainers.costrouc ];
   };

@@ -1,6 +1,9 @@
 { lib
 , buildPythonPackage
 , fetchFromGitHub
+, setuptools
+, setuptools-scm
+, pythonOlder
 , sdcc
 , nmigen
 , fx2
@@ -16,19 +19,22 @@
 
 buildPythonPackage rec {
   pname = "glasgow";
-  version = "unstable-2019-08-31";
-  realVersion = lib.substring 0 7 src.rev;
+  version = "unstable-2021-03-02";
+  disabled = pythonOlder "3.7";
+  # python software/setup.py --version
+  realVersion = "0.1.dev1660+g${lib.substring 0 7 src.rev}";
 
   src = fetchFromGitHub {
     owner = "GlasgowEmbedded";
-    repo = "Glasgow";
-    rev = "21641a13c6a0daaf8618aff3c5bfffcb26ef6cca";
-    sha256 = "1dpm1jmm4fg8xf17s6h9g5sc09gq8b6xq955sv2x11nrbqf98l4v";
+    repo = "glasgow";
+    rev = "41c48bbcee284d024e4249a81419fbbae674cf40";
+    sha256 = "1fg8ps228930d70bczwmcwnrd1gvm02a58mxbpn8pyakwbwwa6hq";
   };
 
-  nativeBuildInputs = [ sdcc ];
+  nativeBuildInputs = [ setuptools-scm sdcc ];
 
   propagatedBuildInputs = [
+    setuptools
     nmigen
     fx2
     libusb1
@@ -38,28 +44,33 @@ buildPythonPackage rec {
     crcmod
   ];
 
-  postPatch = ''
-    substituteInPlace software/setup.py \
-      --replace 'versioneer.get_version()' '"${realVersion}"'
-  '';
+  checkInputs = [ yosys icestorm nextpnr ];
+
+  enableParallelBuilding = true;
 
   preBuild = ''
     make -C firmware LIBFX2=${fx2}/share/libfx2
     cp firmware/glasgow.ihex software/glasgow
     cd software
+    export SETUPTOOLS_SCM_PRETEND_VERSION="${realVersion}"
   '';
 
-  # a couple failing tests and also installCheck tries to build_ext again
+  # installCheck tries to build_ext again
   doInstallCheck = false;
-  doCheck = false;
 
   checkPhase = ''
-    python -m unittest discover
+    python -W ignore::DeprecationWarning test.py
   '';
+
+  makeWrapperArgs = [
+    "--set" "YOSYS" "${yosys}/bin/yosys"
+    "--set" "ICEPACK" "${icestorm}/bin/icepack"
+    "--set" "NEXTPNR_ICE40" "${nextpnr}/bin/nextpnr-ice40"
+  ];
 
   meta = with lib; {
     description = "Software for Glasgow, a digital interface multitool";
-    homepage = https://github.com/GlasgowEmbedded/Glasgow;
+    homepage = "https://github.com/GlasgowEmbedded/Glasgow";
     license = licenses.bsd0;
     maintainers = with maintainers; [ emily ];
   };

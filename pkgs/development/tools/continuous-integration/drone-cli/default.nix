@@ -1,24 +1,29 @@
-# with import <nixpkgs>{};
-{ stdenv, fetchFromGitHub, buildGoPackage }:
+{ lib, fetchFromGitHub, buildGoModule }:
 
-buildGoPackage rec {
+let version = "1.3.0";
+in buildGoModule rec {
+  inherit version;
   pname = "drone-cli";
-  version = "0.8.6";
   revision = "v${version}";
-  goPackagePath = "github.com/drone/drone-cli";
 
-  goDeps= ./deps.nix;
+  vendorSha256 = "sha256-I+UBa6gqkPRXNV72iyJcCBLYShZxMtHFHSK77mhDv+U=";
+
+  doCheck = false;
+
+  preBuild = ''
+    buildFlagsArray+=("-ldflags" "-X main.version=${version}")
+  '';
 
   src = fetchFromGitHub {
     owner = "drone";
     repo = "drone-cli";
     rev = revision;
-    sha256 = "1vvilpqyx9jl0lc9hr73qxngwhwbyk81fycal7ys1w59gv9hxrh9";
+    sha256 = "sha256-j6drDMxvAVfQ1aCFooc9g9HhMRMlFZXGZPiuJZKBbY4=";
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     maintainers = with maintainers; [ bricewge ];
     license = licenses.asl20;
-    description = "Command line client for the Drone continuous integration server.";
+    description = "Command line client for the Drone continuous integration server";
   };
 }

@@ -2,12 +2,13 @@
 , lib
 , fetchFromGitHub
 , imagemagickBig
-, pkgconfig
+, pkg-config
 , libX11
 , libv4l
 , qtbase
 , qtx11extras
 , wrapQtAppsHook
+, wrapGAppsHook
 , gtk3
 , xmlto
 , docbook_xsl
@@ -15,11 +16,12 @@
 , dbus
 , enableVideo ? stdenv.isLinux
 , enableDbus ? stdenv.isLinux
+, libintl
 }:
 
 stdenv.mkDerivation rec {
   pname = "zbar";
-  version = "0.23";
+  version = "0.23.90";
 
   outputs = [ "out" "lib" "dev" "doc" "man" ];
 
@@ -27,20 +29,22 @@ stdenv.mkDerivation rec {
     owner = "mchehab";
     repo = "zbar";
     rev = version;
-    sha256 = "0hlxakpyjg4q9hp7yp3har1n78341b4knwyll28hn48vykg28pza";
+    sha256 = "sha256-FvV7TMc4JbOiRjWLka0IhtpGGqGm5fis7h870OmJw2U=";
   };
 
   nativeBuildInputs = [
-    pkgconfig
+    pkg-config
     xmlto
     autoreconfHook
     docbook_xsl
     wrapQtAppsHook
+    wrapGAppsHook
   ];
 
   buildInputs = [
     imagemagickBig
     libX11
+    libintl
   ] ++ lib.optionals enableDbus [
     dbus
   ] ++ lib.optionals enableVideo [
@@ -50,10 +54,13 @@ stdenv.mkDerivation rec {
     qtx11extras
   ];
 
+  # Disable assertions which include -dev QtBase file paths.
+  NIX_CFLAGS_COMPILE = "-DQT_NO_DEBUG";
+
   configureFlags = [
     "--without-python"
   ] ++ (if enableDbus then [
-    "--with-dbusconfdir=${placeholder "out"}/etc"
+    "--with-dbusconfdir=${placeholder "out"}/share"
   ] else [
     "--without-dbus"
   ]) ++ (if enableVideo then [
@@ -68,7 +75,7 @@ stdenv.mkDerivation rec {
   dontWrapGApps = true;
 
   postFixup = lib.optionalString enableVideo ''
-    wrapProgram "$out/bin/zbarcam-gtk" "''${gappsWrapperArgs[@]}"
+    wrapGApp "$out/bin/zbarcam-gtk"
     wrapQtApp "$out/bin/zbarcam-qt"
   '';
 
@@ -84,6 +91,6 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [ delroth raskin ];
     platforms = platforms.unix;
     license = licenses.lgpl21;
-    homepage = https://github.com/mchehab/zbar;
+    homepage = "https://github.com/mchehab/zbar";
   };
 }

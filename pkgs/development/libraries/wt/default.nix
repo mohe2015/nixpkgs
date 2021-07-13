@@ -1,5 +1,5 @@
-{ stdenv, fetchFromGitHub, cmake, boost, pkgconfig, doxygen, qt48Full, libharu
-, pango, fcgi, firebird, mysql, postgresql, graphicsmagick, glew, openssl
+{ lib, stdenv, fetchFromGitHub, cmake, boost, pkg-config, doxygen, qt48Full, libharu
+, pango, fcgi, firebird, libmysqlclient, postgresql, graphicsmagick, glew, openssl
 , pcre, harfbuzz
 }:
 
@@ -17,25 +17,25 @@ let
         inherit sha256;
       };
 
-      enableParallelBuilding = true;
-
-      nativeBuildInputs = [ pkgconfig ];
+      nativeBuildInputs = [ cmake pkg-config ];
       buildInputs = [
-        cmake boost doxygen qt48Full libharu
-        pango fcgi firebird mysql.connector-c postgresql graphicsmagick glew
-        openssl pcre
+        boost doxygen qt48Full libharu
+        pango fcgi firebird libmysqlclient postgresql graphicsmagick glew
+        openssl pcre harfbuzz
       ];
 
       cmakeFlags = [
-        "-DWT_WRASTERIMAGE_IMPLEMENTATION=GraphicsMagick"
         "-DWT_CPP_11_MODE=-std=c++11"
-        "-DGM_PREFIX=${graphicsmagick}"
-        "-DMYSQL_PREFIX=${mysql.connector-c}"
-        "-DHARFBUZZ_INCLUDE_DIR=${harfbuzz.dev}/include"
         "--no-warn-unused-cli"
-      ];
+      ]
+      ++ lib.optionals (graphicsmagick != null) [
+        "-DWT_WRASTERIMAGE_IMPLEMENTATION=GraphicsMagick"
+        "-DGM_PREFIX=${graphicsmagick}"
+      ]
+      ++ lib.optional (libmysqlclient != null)
+        "-DMYSQL_PREFIX=${libmysqlclient}";
 
-      meta = with stdenv.lib; {
+      meta = with lib; {
         homepage = "https://www.webtoolkit.eu/wt";
         description = "C++ library for developing web applications";
         platforms = platforms.linux;
@@ -45,12 +45,12 @@ let
     };
 in {
   wt3 = generic {
-    version = "3.4.1";
-    sha256 = "1bsx7hmy6g2x9p3vl5xw9lv1xk891pnvs93a87s15g257gznkjmj";
+    version = "3.5.0";
+    sha256 = "1xcwzldbval5zrf7f3n2gkpscagg51cw2jp6p3q1yh6bi59haida";
   };
 
   wt4 = generic {
-    version = "4.1.1";
-    sha256 = "1f1imx5kbpqlysrqx5h75hf2f8pkq972rz42x0pl6cxbnsyzngid";
+    version = "4.5.0";
+    sha256 = "16svzdma2mc2ggnpy5z7m1ggzhd5nrccmmj8xnc7bd1dd3486xwv";
   };
 }

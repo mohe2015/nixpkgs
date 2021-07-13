@@ -17,12 +17,15 @@ rec {
     isAarch32      = { cpu = { family = "arm"; bits = 32; }; };
     isAarch64      = { cpu = { family = "arm"; bits = 64; }; };
     isMips         = { cpu = { family = "mips"; }; };
+    isMmix         = { cpu = { family = "mmix"; }; };
     isRiscV        = { cpu = { family = "riscv"; }; };
     isSparc        = { cpu = { family = "sparc"; }; };
     isWasm         = { cpu = { family = "wasm"; }; };
     isMsp430       = { cpu = { family = "msp430"; }; };
+    isVc4          = { cpu = { family = "vc4"; }; };
     isAvr          = { cpu = { family = "avr"; }; };
     isAlpha        = { cpu = { family = "alpha"; }; };
+    isOr1k         = { cpu = { family = "or1k"; }; };
     isJavaScript   = { cpu = cpuTypes.js; };
 
     is32bit        = { cpu = { bits = 32; }; };
@@ -32,7 +35,7 @@ rec {
 
     isBSD          = { kernel = { families = { inherit (kernelFamilies) bsd; }; }; };
     isDarwin       = { kernel = { families = { inherit (kernelFamilies) darwin; }; }; };
-    isUnix         = [ isBSD isDarwin isLinux isSunOS isCygwin ];
+    isUnix         = [ isBSD isDarwin isLinux isSunOS isCygwin isRedox ];
 
     isMacOS        = { kernel = kernels.macos; };
     isiOS          = { kernel = kernels.ios; };
@@ -45,7 +48,9 @@ rec {
     isCygwin       = { kernel = kernels.windows; abi = abis.cygnus; };
     isMinGW        = { kernel = kernels.windows; abi = abis.gnu; };
     isWasi         = { kernel = kernels.wasi; };
+    isRedox        = { kernel = kernels.redox; };
     isGhcjs        = { kernel = kernels.ghcjs; };
+    isGenode       = { kernel = kernels.genode; };
     isNone         = { kernel = kernels.none; };
 
     isAndroid      = [ { abi = abis.android; } { abi = abis.androideabi; } ];
@@ -54,9 +59,6 @@ rec {
 
     isEfi          = map (family: { cpu.family = family; })
                        [ "x86" "arm" "aarch64" ];
-
-    # Deprecated after 18.03
-    isArm = isAarch32;
   };
 
   matchAnyAttrs = patterns:

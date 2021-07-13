@@ -1,29 +1,60 @@
-{ stdenv, buildGoPackage, fetchFromGitHub, libobjc, IOKit }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub, libobjc, IOKit }:
 
-buildGoPackage rec {
+let
+  # A list of binaries to put into separate outputs
+  bins = [
+    "geth"
+    "clef"
+  ];
+
+in buildGoModule rec {
   pname = "go-ethereum";
-  version = "1.9.3";
-
-  goPackagePath = "github.com/ethereum/go-ethereum";
-
-  # Fix for usb-related segmentation faults on darwin
-  propagatedBuildInputs =
-    stdenv.lib.optionals stdenv.isDarwin [ libobjc IOKit ];
-
-  # Fixes Cgo related build failures (see https://github.com/NixOS/nixpkgs/issues/25959 )
-  hardeningDisable = [ "fortify" ];
+  version = "1.10.4";
 
   src = fetchFromGitHub {
     owner = "ethereum";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0lv6gxp34j26hqazcvyr4c7rsl1vljm6cfzkcmlapsjdgym505bg";
+    sha256 = "sha256-DRlIiO3iXUsQnmOf5T9uk3560tVbS+Hrs8QtVkmllAI=";
   };
 
-  meta = with stdenv.lib; {
+  runVend = true;
+  vendorSha256 = "sha256-a/vY9iyqSM9QPs7lGFF6E7e2cMjIerVkNf5KwiWdyr0=";
+
+  doCheck = false;
+
+  outputs = [ "out" ] ++ bins;
+
+  # Move binaries to separate outputs and symlink them back to $out
+  postInstall = lib.concatStringsSep "\n" (
+    builtins.map (bin: "mkdir -p \$${bin}/bin && mv $out/bin/${bin} \$${bin}/bin/ && ln -s \$${bin}/bin/${bin} $out/bin/") bins
+  );
+
+  subPackages = [
+    "cmd/abidump"
+    "cmd/abigen"
+    "cmd/bootnode"
+    "cmd/checkpoint-admin"
+    "cmd/clef"
+    "cmd/devp2p"
+    "cmd/ethkey"
+    "cmd/evm"
+    "cmd/faucet"
+    "cmd/geth"
+    "cmd/p2psim"
+    "cmd/puppeth"
+    "cmd/rlpdump"
+    "cmd/utils"
+  ];
+
+  # Fix for usb-related segmentation faults on darwin
+  propagatedBuildInputs =
+    lib.optionals stdenv.isDarwin [ libobjc IOKit ];
+
+  meta = with lib; {
     homepage = "https://geth.ethereum.org/";
     description = "Official golang implementation of the Ethereum protocol";
-    license = with licenses; [ lgpl3 gpl3 ];
-    maintainers = with maintainers; [ adisbladis asymmetric lionello xrelkd ];
+    license = with licenses; [ lgpl3Plus gpl3Plus ];
+    maintainers = with maintainers; [ adisbladis lionello xrelkd RaghavSood ];
   };
 }

@@ -1,6 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
-, substituteAll
+, nix-update-script
+, desktop-file-utils
+, pkg-config
 , writeScript
 , pantheon
 , gnome-keyring
@@ -8,11 +10,12 @@
 , wingpanel
 , orca
 , onboard
-, at-spi2-core
 , elementary-default-settings
-, writeShellScriptBin
 , elementary-settings-daemon
 , runtimeShell
+, writeText
+, meson
+, ninja
 }:
 
 let
@@ -33,89 +36,124 @@ let
     #!${runtimeShell}
 
     elementary_default_settings="${elementary-default-settings}"
-    dock_items="$elementary_default_settings/share/elementary/config/plank/dock1/launchers"/*
+    dock_items="$elementary_default_settings/etc/skel/.config/plank/dock1/launchers"/*
 
     if [ ! -d "$HOME/.config/plank/dock1" ]; then
         echo "Instantiating default Plank Dockitems..."
 
-        mkdir -p $HOME/.config/plank/dock1/launchers
-        cp -r --no-preserve=mode,ownership $dock_items $HOME/.config/plank/dock1/launchers/
+        mkdir -p "$HOME/.config/plank/dock1/launchers"
+        cp -r --no-preserve=mode,ownership $dock_items "$HOME/.config/plank/dock1/launchers/"
     else
         echo "Plank Dockitems already instantiated"
     fi
   '';
 
-  dockitemAutostart = substituteAll {
-    src = ./default-elementary-dockitems.desktop;
-    script = dockitems-script;
-  };
+  dockitemAutostart = writeText "default-elementary-dockitems.desktop" ''
+    [Desktop Entry]
+    Type=Application
+    Name=Instantiate Default elementary dockitems
+    Exec=${dockitems-script}
+    StartupNotify=false
+    NoDisplay=true
+    OnlyShowIn=Pantheon;
+    X-GNOME-Autostart-Phase=EarlyInitialization
+  '';
 
-  executable = writeShellScriptBin "pantheon" ''
-    export XDG_CONFIG_DIRS=${elementary-settings-daemon}/etc/xdg:$XDG_CONFIG_DIRS
-    export XDG_DATA_DIRS=${placeholder "out"}/share:$XDG_DATA_DIRS
-    exec ${gnome-session}/bin/gnome-session --session=pantheon "$@"
+  executable = writeScript "pantheon" ''
+    # gnome-session can find RequiredComponents for `pantheon` session (notably pantheon's patched g-s-d autostarts)
+    export XDG_CONFIG_DIRS=@out@/etc/xdg:$XDG_CONFIG_DIRS
+
+    # Make sure we use our gtk-3.0/settings.ini
+    export XDG_CONFIG_DIRS=${elementary-default-settings}/etc:$XDG_CONFIG_DIRS
+
+    # * gnome-session can find the `pantheon' session
+    # * use pantheon-mimeapps.list
+    export XDG_DATA_DIRS=@out@/share:$XDG_DATA_DIRS
+
+    # Start pantheon session. Keep in sync with upstream
+    exec ${gnome-session}/bin/gnome-session --builtin --session=pantheon "$@"
+  '';
+
+  # Absolute path patched version of the upstream xsession
+  xsession = writeText "pantheon.desktop" ''
+    [Desktop Entry]
+    Name=Pantheon
+    Comment=This session provides elementary experience
+    Exec=@out@/libexec/pantheon
+    TryExec=${wingpanel}/bin/wingpanel
+    Icon=
+    DesktopNames=Pantheon
+    Type=Application
   '';
 
 in
 
 stdenv.mkDerivation rec {
-  pname = "elementary-session-settings";
-  version = "5.0.3";
+  pname = "elementary-session-settings-unstable";
+  version = "2020-07-06";
 
   repoName = "session-settings";
 
   src = fetchFromGitHub {
     owner = "elementary";
     repo = repoName;
-    rev = version;
-    sha256 = "1vrjm7bklkfv0dyafm312v4hxzy6lb7p1ny4ijkn48kr719gc71k";
+    rev = "fa15cbd83fba0ba30e9a302db880350bff5ace52";
+    hash = "sha256-26H791c7OAjFYtjVChIatICSocMt0uTej1TKBOvw+6w=";
   };
 
-  passthru = {
-    updateScript = pantheon.updateScript {
-      inherit repoName;
-      attrPath = pname;
-    };
-  };
+  nativeBuildInputs = [
+    desktop-file-utils
+    meson
+    ninja
+    pkg-config
+  ];
 
-  dontBuild = true;
-  dontConfigure = true;
+  buildInputs = [
+    pantheon.elementary-settings-daemon
+    gnome-keyring
+    onboard
+    orca
+  ];
 
-  installPhase = ''
+  mesonFlags = [
+    "-Dmimeapps-list=false"
+    "-Dfallback-session=GNOME"
+    "-Ddetect-program-prefixes=true"
+    "--sysconfdir=${placeholder "out"}/etc"
+  ];
+
+  postInstall = ''
+    # our mimeapps patched from upstream to exclude:
+    # * pantheon-mail -> geary
+    # * evince.desktop -> org.gnome.Evince.desktop
     mkdir -p $out/share/applications
     cp -av ${./pantheon-mimeapps.list} $out/share/applications/pantheon-mimeapps.list
 
-    mkdir -p $out/etc/xdg/autostart
-    for package in ${gnome-keyring} ${orca} ${onboard} ${at-spi2-core}; do
-      cp -av $package/etc/xdg/autostart/* $out/etc/xdg/autostart
-    done
-
+    # instantiates pantheon's dockitems
     cp "${dockitemAutostart}" $out/etc/xdg/autostart/default-elementary-dockitems.desktop
 
-    mkdir -p $out/share/gnome-session/sessions
-    cp -av gnome-session/pantheon.session $out/share/gnome-session/sessions
+    # script `Exec` to start pantheon
+    mkdir -p $out/libexec
+    substitute ${executable} $out/libexec/pantheon --subst-var out
+    chmod +x $out/libexec/pantheon
 
-    mkdir -p $out/share/xsessions
-    cp -av xsessions/pantheon.desktop $out/share/xsessions
+    # absolute path patched xsession
+    substitute ${xsession} $out/share/xsessions/pantheon.desktop --subst-var out
   '';
 
-  postFixup = ''
-    substituteInPlace $out/share/xsessions/pantheon.desktop \
-      --replace "gnome-session --session=pantheon" "${executable}/bin/pantheon" \
-      --replace "wingpanel" "${wingpanel}/bin/wingpanel"
+  passthru = {
+    updateScript = nix-update-script {
+      attrPath = "pantheon.${pname}";
+    };
 
-    for f in $out/etc/xdg/autostart/*; do mv "$f" "''${f%.desktop}-pantheon.desktop"; done
+    providedSessions = [
+      "pantheon"
+    ];
+  };
 
-    for autostart in $(grep -rl "OnlyShowIn=GNOME;" $out/etc/xdg/autostart)
-    do
-      echo "Patching OnlyShowIn to Pantheon in: $autostart"
-      sed -i "s,OnlyShowIn=GNOME;,OnlyShowIn=Pantheon;," $autostart
-    done
-  '';
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Session settings for elementary";
-    homepage = https://github.com/elementary/session-settings;
+    homepage = "https://github.com/elementary/session-settings";
     license = licenses.lgpl3;
     platforms = platforms.linux;
     maintainers = pantheon.maintainers;

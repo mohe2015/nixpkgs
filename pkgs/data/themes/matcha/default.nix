@@ -1,14 +1,14 @@
-{ stdenv, fetchFromGitHub, gdk-pixbuf, librsvg, gtk-engine-murrine }:
+{ lib, stdenv, fetchFromGitHub, gdk-pixbuf, librsvg, gtk-engine-murrine }:
 
 stdenv.mkDerivation rec {
-  pname = "matcha";
-  version = "2019-07";
+  pname = "matcha-gtk-theme";
+  version = "2021-07-08";
 
   src = fetchFromGitHub {
     owner = "vinceliuice";
     repo = pname;
-    rev = "v${version}";
-    sha256 = "1jv7qq4lsjpz40wchrqlzc8w4ggrmwjavy4ipzz11jal99skpv7i";
+    rev = version;
+    sha256 = "sha256-iTwPN31JvpFlCBWikOeSTda2wBEtg6ygy8o6ovqHPCw=";
   };
 
   buildInputs = [ gdk-pixbuf librsvg ];
@@ -16,16 +16,20 @@ stdenv.mkDerivation rec {
   propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
   installPhase = ''
+    runHook preInstall
     patchShebangs .
     mkdir -p $out/share/themes
-    name= ./Install -d $out/share/themes
+    name= ./install.sh -d $out/share/themes
     install -D -t $out/share/gtksourceview-3.0/styles src/extra/gedit/matcha.xml
+    mkdir -p $out/share/doc/${pname}
+    cp -a src/extra/firefox $out/share/doc/${pname}
+    runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
-    description = "A stylish Design theme for GTK based desktop environments";
-    homepage = https://vinceliuice.github.io/theme-matcha;
-    license = licenses.gpl3;
+  meta = with lib; {
+    description = "A stylish flat design theme for GTK based desktop environments";
+    homepage = "https://vinceliuice.github.io/theme-matcha";
+    license = licenses.gpl3Only;
     platforms = platforms.unix;
     maintainers = [ maintainers.romildo ];
   };

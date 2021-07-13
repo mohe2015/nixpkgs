@@ -1,23 +1,22 @@
-{ stdenv, fetchFromGitHub, rustPlatform }:
+{ lib, fetchFromGitHub, rustPlatform }:
 
 rustPlatform.buildRustPackage rec {
   pname = "mdsh";
-  version = "0.1.4";
+  version = "0.6.0";
 
   src = fetchFromGitHub {
     owner = "zimbatm";
     repo = "mdsh";
     rev = "v${version}";
-    sha256 = "0m3f5mrdmnmkfsy7mc6x3jf4ainmq0z42mv935ikcdbjwwjbd5gq";
+    sha256 = "1ki6w3qf8ipcf7ch5120mj16vs7yan8k9zjd25v8x6vbsd1iccgy";
   };
 
-  cargoSha256 = "11kzl0ns84xhdacn0k7nilgzgpwazmaaqdjf2kcarxf2h01b0rjv";
+  cargoSha256 = "0x5fd47rjmzzmwgj14gbj0rbxwbphd7f63mis4ivwlwc9ikjxdxb";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Markdown shell pre-processor";
-    homepage = https://github.com/zimbatm/mdsh;
+    homepage = "https://github.com/zimbatm/mdsh";
     license = with licenses; [ mit ];
     maintainers = with maintainers; [ zimbatm ];
-    platforms = platforms.all;
   };
 }

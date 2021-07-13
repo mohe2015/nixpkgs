@@ -1,4 +1,4 @@
-{ mkDerivation, lib, fetchurl,
+{ mkDerivation, lib, fetchpatch, fetchurl,
   cmake, extra-cmake-modules, qtwebengine, qtscript, grantlee,
   kxmlgui, kwallet, kparts, kdoctools, kjobwidgets, kdesignerplugin,
   kiconthemes, knewstuff, sqlcipher, qca-qt5, kactivities, karchive,
@@ -7,11 +7,11 @@
 
 mkDerivation rec {
   pname = "skrooge";
-  version = "2.20.0";
+  version = "2.24.6";
 
   src = fetchurl {
     url = "http://download.kde.org/stable/skrooge/${pname}-${version}.tar.xz";
-    sha256 = "0rakfngp7j2x7h1isg6lbc5kva6k1kg99dz0zl43dc28s15can1w";
+    sha256 = "sha256-DReIm9lcq0j761wWTpJu7HnfEWz9QsRGgUtyVaXFs6A=";
   };
 
   nativeBuildInputs = [
@@ -30,12 +30,13 @@ mkDerivation rec {
   cmakeFlags = [
     "-DSKG_DESIGNER=OFF"
     "-DSKG_WEBENGINE=ON"
+    "-DBUILD_TESTS=ON"
   ];
 
   meta = with lib; {
     description = "A personal finances manager, powered by KDE";
     license = with licenses; [ gpl3 ];
     maintainers = with maintainers; [ joko ];
-    homepage = https://skrooge.org/;
+    homepage = "https://skrooge.org/";
   };
 }

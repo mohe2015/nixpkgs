@@ -12,9 +12,9 @@ let
     inherit service action;
     authority = {
       file = {
-        group = "nobody";
-        owner = "nobody";
-        path = "/tmp/${host}-ca.pem";
+        group = "nginx";
+        owner = "nginx";
+        path = "/var/ssl/${host}-ca.pem";
       };
       remote = "https://127.0.0.1:8888";
       profile = "default";
@@ -131,9 +131,9 @@ let
         services.nginx = {
           enable = true;
           virtualHosts = lib.mkMerge (map (host: {
-            ${host} = {
-              sslCertificate = "/tmp/${host}-cert.pem";
-              sslCertificateKey = "/tmp/${host}-key.pem";
+            "${host}" = {
+              sslCertificate = "/var/ssl/${host}-cert.pem";
+              sslCertificateKey = "/var/ssl/${host}-key.pem";
               extraConfig = ''
                 ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
               '';

@@ -1,35 +1,38 @@
-{ stdenv, fetchurl, zlib, pciutils, coreutils, acpica-tools, iasl, makeWrapper, gnugrep, gnused, file, buildEnv }:
+{ lib, stdenv, fetchurl, zlib, pciutils, coreutils, acpica-tools, iasl, makeWrapper, gnugrep, gnused, file, buildEnv }:
 
 let
-  version = "4.10";
+  version = "4.14";
 
-  meta = with stdenv.lib; {
+  commonMeta = with lib; {
     description = "Various coreboot-related tools";
     homepage = "https://www.coreboot.org";
     license = licenses.gpl2;
-    maintainers = [ maintainers.petabyteboy ];
+    maintainers = with maintainers; [ petabyteboy felixsinger yuka ];
     platforms = platforms.linux;
   };
 
   generic = { pname, path ? "util/${pname}", ... }@args: stdenv.mkDerivation (rec {
-    inherit pname version meta;
+    inherit pname version;
 
     src = fetchurl {
       url = "https://coreboot.org/releases/coreboot-${version}.tar.xz";
-      sha256 = "1jsiz17afi2lqg1jv6lsl8s05w7vr7iwgg86y2qp369hcz6kcwfa";
+      sha256 = "0viw2x4ckjwiylb92w85k06b0g9pmamjy2yqs7fxfqbmfadkf1yr";
     };
 
     enableParallelBuilding = true;
 
     postPatch = ''
       cd ${path}
+      patchShebangs .
     '';
 
     makeFlags = [
       "INSTALL=install"
       "PREFIX=${placeholder "out"}"
     ];
-  } // args);
+
+    meta = commonMeta // args.meta;
+  } // (removeAttrs args ["meta"]));
 
   utils = {
     msrtool = generic {
@@ -40,7 +43,7 @@ let
     };
     cbmem = generic {
       pname = "cbmem";
-      meta.description = "Coreboot console log reader";
+      meta.description = "coreboot console log reader";
     };
     ifdtool = generic {
       pname = "ifdtool";
@@ -87,18 +90,19 @@ let
       nativeBuildInputs = [ makeWrapper ];
       dontBuild = true;
       installPhase = "install -Dm755 acpidump-all $out/bin/acpidump-all";
-      postFixup = let 
+      postFixup = let
         binPath = [ coreutils  acpica-tools iasl gnugrep  gnused  file ];
-      in "wrapProgram $out/bin/acpidump-all --set PATH ${stdenv.lib.makeBinPath binPath}";
+      in "wrapProgram $out/bin/acpidump-all --set PATH ${lib.makeBinPath binPath}";
     };
   };
 
 in utils // {
   coreboot-utils = (buildEnv {
     name = "coreboot-utils-${version}";
-    paths = stdenv.lib.attrValues utils;
+    paths = lib.attrValues utils;
     postBuild = "rm -rf $out/sbin";
   }) // {
-    inherit meta version;
+    inherit version;
+    meta = commonMeta;
   };
 }

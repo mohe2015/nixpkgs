@@ -1,25 +1,63 @@
-{stdenv, fetchurl, pkgconfig, gettext, perlPackages, intltool
-, libxml2, glib}:
+{ stdenv
+, lib
+, fetchFromGitLab
+, fetchpatch
+, meson
+, ninja
+, pkg-config
+, gettext
+, itstool
+, libxml2
+, glib
+, shared-mime-info
+}:
 
-let version = "1.12"; in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "shared-mime-info";
-  inherit version;
+  version = "2.1";
 
-  src = fetchurl {
-    url = "https://gitlab.freedesktop.org/xdg/shared-mime-info/uploads/80c7f1afbcad2769f38aeb9ba6317a51/shared-mime-info-1.12.tar.xz";
-    sha256 = "0gj0pp36qpsr9w6v4nywnjpcisadwkndapqsjn0ny3gd0zzg1chq";
+  src = fetchFromGitLab {
+    domain = "gitlab.freedesktop.org";
+    owner = "xdg";
+    repo = pname;
+    rev = version;
+    sha256 = "07bxv44p43pqq4ymfnyy50yli7lwdqymhvclna42rkn1cazq3vb5";
   };
 
-  nativeBuildInputs = [ pkgconfig gettext intltool ] ++ (with perlPackages; [ perl XMLParser ]);
-  buildInputs = [ libxml2 glib ];
+  patches = [
+    # xmlto is only used for building the docs, which are not installed anyways.
+    (fetchpatch {
+      name = "xmlto-optional.patch";
+      url = "https://gitlab.freedesktop.org/xdg/shared-mime-info/-/merge_requests/110.patch";
+      sha256 = "0p5gxlcmn8ji5bc7pd105s1halqwa1d28lfx9yj43rn6mav7allx";
+    })
+  ];
 
-  meta = with stdenv.lib; {
-    inherit version;
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+    gettext
+    itstool
+  ] ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    libxml2
+    shared-mime-info
+  ];
+
+  buildInputs = [
+    libxml2
+    glib
+  ];
+
+  mesonFlags = [
+    "-Dupdate-mimedb=true"
+  ];
+
+  meta = with lib; {
     description = "A database of common MIME types";
-    homepage = http://freedesktop.org/wiki/Software/shared-mime-info;
+    homepage = "http://freedesktop.org/wiki/Software/shared-mime-info";
     license = licenses.gpl2Plus;
     platforms = platforms.unix;
-    maintainers = [ maintainers.mimame ];
+    maintainers = teams.freedesktop.members ++ [ maintainers.mimame ];
   };
 }

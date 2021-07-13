@@ -4,13 +4,13 @@
 assert withSystemd -> systemd != null;
 stdenv.mkDerivation rec {
   pname = "yder";
-  version = "1.4.7";
+  version = "1.4.12";
 
   src = fetchFromGitHub {
     owner = "babelouest";
     repo = pname;
     rev = "v${version}";
-    sha256 = "19ghiwpi972wjqvlgg576nk2nkf1ii5l1kvzb056496xfmlysrwa";
+    sha256 = "1cmla7rpwvsj1b3jhp9q8y3ni5n8rsqxib87yhh07b7xnlhy0gcj";
   };
 
   patches = [
@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
   doCheck = true;
 
   preCheck = ''
-    export LD_LIBRARY_PATH="$(pwd):$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="$(pwd)''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
     export DYLD_FALLBACK_LIBRARY_PATH="$(pwd):$DYLD_FALLBACK_LIBRARY_PATH"
   '';
 

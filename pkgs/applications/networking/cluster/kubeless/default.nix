@@ -1,28 +1,38 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoPackage, fetchFromGitHub, installShellFiles }:
 
-buildGoModule rec {
+buildGoPackage rec {
   pname = "kubeless";
-  version = "1.0.4";
+  version = "1.0.7";
 
   src = fetchFromGitHub {
     owner = "kubeless";
     repo = "kubeless";
     rev = "v${version}";
-    sha256 = "1f5w6kn9rsaxx9nf6kzyjkzm3s9ycy1c8h78hb61v4x915xd3040";
+    sha256 = "0x2hydywnnlh6arzz71p7gg9yzq5z2y2lppn1jszvkbgh11kkqfr";
   };
-  modSha256 = "1pw4pwb8z2kq474jjipjdivlrin5zvw8d2if4317b0w0wyp6isgd";
+
+  goPackagePath = "github.com/kubeless/kubeless";
+
+  nativeBuildInputs = [ installShellFiles ];
 
   subPackages = [ "cmd/kubeless" ];
 
   buildFlagsArray = ''
-    -ldflags=-X github.com/kubeless/kubeless/pkg/version.Version=${version}
+    -ldflags=-s -w -X github.com/kubeless/kubeless/pkg/version.Version=${version}
   '';
 
-  meta = with stdenv.lib; {
+  postInstall = ''
+    for shell in bash; do
+      $out/bin/kubeless completion $shell > kubeless.$shell
+      installShellCompletion kubeless.$shell
+    done
+  '';
+
+  meta = with lib; {
     homepage = "https://kubeless.io";
     description = "The Kubernetes Native Serverless Framework";
     license = licenses.asl20;
-    maintainers = with maintainers; [ "00-matt" ];
+    maintainers = with maintainers; [];
     platforms = platforms.unix;
   };
 }

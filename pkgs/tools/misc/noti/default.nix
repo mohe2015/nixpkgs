@@ -3,18 +3,16 @@
 
 buildGoPackage rec {
   pname = "noti";
-  version = "3.2.0";
+  version = "3.5.0";
 
   src = fetchFromGitHub {
     owner = "variadico";
     repo = "noti";
     rev = version;
-    sha256 = "1lw1wmw2m83m0s5znb4gliywjpg74qrhrj6rwpcb5p352c4vbwxs";
+    sha256 = "12r9wawwl6x0rfv1kahwkamfa0pjq24z60az9pn9nsi2z1rrlwkd";
   };
 
   buildInputs = lib.optional stdenv.isDarwin Cocoa;
-  # TODO: Remove this when we update apple_sdk
-  NIX_CFLAGS_COMPILE = lib.optional stdenv.isDarwin "-fno-objc-arc";
 
   goPackagePath = "github.com/variadico/noti";
 
@@ -28,15 +26,14 @@ buildGoPackage rec {
   '';
 
   meta = with lib; {
-    description = "Monitor a process and trigger a notification.";
+    description = "Monitor a process and trigger a notification";
     longDescription = ''
       Monitor a process and trigger a notification.
 
       Never sit and wait for some long-running process to finish. Noti can alert you when it's done. You can receive messages on your computer or phone.
     '';
-    homepage = https://github.com/variadico/noti;
+    homepage = "https://github.com/variadico/noti";
     license = licenses.mit;
-    maintainers = with maintainers; [ stites ];
-    platforms = platforms.all;
+    maintainers = with maintainers; [ stites marsam ];
   };
 }

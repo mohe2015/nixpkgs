@@ -1,52 +1,104 @@
-{ stdenv, fetchurl, pkgconfig, vala, glib, libxslt, gtk3, wrapGAppsHook
-, webkitgtk, json-glib, librest, libsecret, gtk-doc, gobject-introspection
-, gettext, icu, glib-networking, hicolor-icon-theme
-, libsoup, docbook_xsl, docbook_xml_dtd_412, gnome3, gcr, kerberos
+{ lib, stdenv
+, fetchFromGitLab
+, pkg-config
+, vala
+, glib
+, meson
+, ninja
+, python3
+, libxslt
+, gtk3
+, webkitgtk
+, json-glib
+, librest
+, libsecret
+, gtk-doc
+, gobject-introspection
+, gettext
+, icu
+, glib-networking
+, libsoup
+, docbook-xsl-nons
+, docbook_xml_dtd_412
+, gnome
+, gcr
+, libkrb5
+, gvfs
+, dbus
+, wrapGAppsHook
 }:
 
-let
+stdenv.mkDerivation rec {
   pname = "gnome-online-accounts";
-  version = "3.32.0";
-in stdenv.mkDerivation rec {
-  name = "${pname}-${version}";
+  version = "3.40.0";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/${pname}/${stdenv.lib.versions.majorMinor version}/${name}.tar.xz";
-    sha256 = "1anlx0rb2hafg9929pgfms25mdz23sd0vdva06h6zlf8f5byc68w";
+  # https://gitlab.gnome.org/GNOME/gnome-online-accounts/issues/87
+  src = fetchFromGitLab {
+    domain = "gitlab.gnome.org";
+    owner = "GNOME";
+    repo = "gnome-online-accounts";
+    rev = version;
+    sha256 = "sha256-GuUWypfmfbovpDKnj6wSBuNeKJIfIyipY+01u/p4znU=";
   };
 
   outputs = [ "out" "man" "dev" "devdoc" ];
 
-  configureFlags = [
-    "--enable-media-server"
-    "--enable-kerberos"
-    "--enable-lastfm"
-    "--enable-todoist"
-    "--enable-gtk-doc"
-    "--enable-documentation"
+  mesonFlags = [
+    "-Dfedora=false" # not useful in NixOS or for NixOS users.
+    "-Dgtk_doc=true"
+    "-Dman=true"
+    "-Dmedia_server=true"
   ];
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
-    pkgconfig gobject-introspection vala gettext wrapGAppsHook
-    libxslt docbook_xsl docbook_xml_dtd_412 gtk-doc
-    hicolor-icon-theme # for setup-hook
-  ];
-  buildInputs = [
-    glib gtk3 webkitgtk json-glib librest libsecret glib-networking icu libsoup
-    gcr kerberos
+    dbus # used for checks and pkg-config to install dbus service/s
+    docbook_xml_dtd_412
+    docbook-xsl-nons
+    gettext
+    gobject-introspection
+    gtk-doc
+    libxslt
+    meson
+    ninja
+    pkg-config
+    python3
+    vala
+    wrapGAppsHook
   ];
 
+  buildInputs = [
+    gcr
+    glib
+    glib-networking
+    gtk3
+    gvfs # OwnCloud, Google Drive
+    icu
+    json-glib
+    libkrb5
+    librest
+    libsecret
+    libsoup
+    webkitgtk
+  ];
+
+  NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
+
+  postPatch = ''
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+  '';
+
   passthru = {
-    updateScript = gnome3.updateScript {
+    updateScript = gnome.updateScript {
       packageName = pname;
-      attrPath = "gnome3.${pname}";
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
+    homepage = "https://wiki.gnome.org/Projects/GnomeOnlineAccounts";
+    description = "Single sign-on framework for GNOME";
     platforms = platforms.linux;
-    maintainers = gnome3.maintainers;
+    license = licenses.lgpl2Plus;
+    maintainers = teams.gnome.members;
   };
 }

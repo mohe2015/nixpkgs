@@ -1,15 +1,13 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
-, fetchpatch
 , docbook_xml_dtd_43
 , docbook_xsl
 , glib
 , gobject-introspection
 , gtk-doc
-, libuuid
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , python3
 , shared-mime-info
 , nixosTests
@@ -17,7 +15,7 @@
 
 stdenv.mkDerivation rec {
   pname = "libxmlb";
-  version = "0.1.11";
+  version = "0.3.1";
 
   outputs = [ "out" "lib" "dev" "devdoc" "installedTests" ];
 
@@ -25,17 +23,10 @@ stdenv.mkDerivation rec {
     owner = "hughsie";
     repo = "libxmlb";
     rev = version;
-    sha256 = "1503v76w7543snqyjxykiqa5va62zb0ccn3jlw0gpdx8973v80mr";
+    sha256 = "sha256-4gJBmSbo5uGj12Y2Ov4gmS8nJshQxuBM9BAevY/lwjg=";
   };
 
   patches = [
-    # Fix installed tests
-    # https://github.com/hughsie/libxmlb/pull/2
-    (fetchpatch {
-      url = "https://github.com/hughsie/libxmlb/commit/78850c8b0f644f729fa21e2bf9ebed0d9d6010f3.diff";
-      sha256 = "0zw7c6vy8hscln7za7ijqd9svirach3zdskvbzyxxcsm3xcwxpjm";
-    })
-
     ./installed-tests-path.patch
   ];
 
@@ -46,14 +37,13 @@ stdenv.mkDerivation rec {
     gtk-doc
     meson
     ninja
-    pkgconfig
+    pkg-config
     (python3.withPackages (pkgs: with pkgs; [ setuptools ]))
     shared-mime-info
   ];
 
   buildInputs = [
     glib
-    libuuid
   ];
 
   mesonFlags = [
@@ -70,13 +60,13 @@ stdenv.mkDerivation rec {
 
   passthru = {
     tests = {
-      installed-tests = nixosTests.libxmlb;
+      installed-tests = nixosTests.installed-tests.libxmlb;
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A library to help create and query binary XML blobs";
-    homepage = https://github.com/hughsie/libxmlb;
+    homepage = "https://github.com/hughsie/libxmlb";
     license = licenses.lgpl21Plus;
     maintainers = with maintainers; [ jtojnar ];
     platforms = platforms.linux;

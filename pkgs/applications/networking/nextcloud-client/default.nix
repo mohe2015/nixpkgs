@@ -7,45 +7,53 @@
 , libsecret
 , openssl
 , pcre
-, pkgconfig
+, pkg-config
 , qtbase
 , qtkeychain
 , qttools
 , qtwebengine
-, qtwebkit
+, qtwebsockets
+, qtquickcontrols2
+, qtgraphicaleffects
 , sqlite
+, inkscape
 }:
 
 mkDerivation rec {
   pname = "nextcloud-client";
-  version = "2.5.3";
+  version = "3.2.4";
 
   src = fetchFromGitHub {
     owner = "nextcloud";
     repo = "desktop";
     rev = "v${version}";
-    sha256 = "1pzlq507fasf2ljf37gkw00qrig4w2r712rsy05zfwlncgcn7fnw";
+    sha256 = "sha256-+APRR3Qj8jdDG2wc4hXFF40aTeoLGAXlsCsB4zKDI3Q=";
   };
 
   patches = [
+    # Explicitly move dbus configuration files to the store path rather than `/etc/dbus-1/services`.
     ./0001-Explicitly-copy-dbus-files-into-the-store-dir.patch
   ];
 
   nativeBuildInputs = [
-    pkgconfig
+    pkg-config
     cmake
+    inkscape
   ];
 
   buildInputs = [
     inotify-tools
     libcloudproviders
+    libsecret
     openssl
     pcre
     qtbase
     qtkeychain
     qttools
     qtwebengine
-    qtwebkit
+    qtquickcontrols2
+    qtgraphicaleffects
+    qtwebsockets
     sqlite
   ];
 
@@ -55,13 +63,14 @@ mkDerivation rec {
 
   cmakeFlags = [
     "-DCMAKE_INSTALL_LIBDIR=lib" # expected to be prefix-relative by build code setting RPATH
+    "-DNO_SHIBBOLETH=1" # allows to compile without qtwebkit
   ];
 
   meta = with lib; {
     description = "Nextcloud themed desktop client";
-    homepage = https://nextcloud.com;
-    license = licenses.gpl2;
-    maintainers = with maintainers; [ caugner ma27 ];
+    homepage = "https://nextcloud.com";
+    license = licenses.gpl2Plus;
+    maintainers = with maintainers; [ caugner ];
     platforms = platforms.linux;
   };
 }

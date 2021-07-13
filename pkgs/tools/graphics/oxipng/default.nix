@@ -1,26 +1,22 @@
-{ stdenv, fetchFromGitHub, rustPlatform }:
+{ lib, stdenv, fetchCrate, rustPlatform }:
 
 rustPlatform.buildRustPackage rec {
-  version = "2.2.2";
+  version = "4.0.3";
   pname = "oxipng";
 
-  src = fetchFromGitHub {
-    owner = "shssoichiro";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "07amczmyqs09zfp564nk8jy1n65y8pvk89qq6jv5k8npai8zvixn";
+  src = fetchCrate {
+    inherit version pname;
+    sha256 = "sha256-lvVgoAZMIqmbS6yMul9Hf9PtneEVy+jDs3kU1jSBL2w=";
   };
 
-  cargoSha256 = "1fkghjzsyg27n6k2yki0yhbdmmb1whgy5fjpydpjm4yv448nhhbm";
+  cargoSha256 = "sha256-sxvOFxSZCANBa/448SpjoLqk/HjqtaFrOhjrQro446Q=";
 
-  # https://crates.io/crates/cloudflare-zlib#arm-vs-nightly-rust
-  cargoBuildFlags = [ "--features=cloudflare-zlib/arm-always" ];
+  doCheck = !stdenv.isAarch64 && !stdenv.isDarwin;
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/shssoichiro/oxipng;
+  meta = with lib; {
+    homepage = "https://github.com/shssoichiro/oxipng";
     description = "A multithreaded lossless PNG compression optimizer";
     license = licenses.mit;
     maintainers = with maintainers; [ dywedir ];
-    platforms = platforms.all;
   };
 }

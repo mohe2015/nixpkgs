@@ -1,58 +1,82 @@
-{ lib
+{ stdenv
+, lib
 , buildPythonPackage
 , fetchFromGitHub
 , fetchpatch
-, python
-, pytest
 , cmake
-, numpy ? null
-, eigen ? null
-, scipy ? null
+, eigen
+, python
+, catch
+, numpy
+, pytest
+, scipy
 }:
 
 buildPythonPackage rec {
   pname = "pybind11";
-  version = "2.3.0";
+  version = "2.6.2";
 
   src = fetchFromGitHub {
     owner = "pybind";
     repo = pname;
     rev = "v${version}";
-    sha256 = "11b6dniri8m05spfd2a19irz82shf4sdca73566bniggrf3zclnf";
+    sha256 = "1lsacpawl2gb5qlh0cawj9swsyfbwhzhwiv6553a7lsigdbadqpy";
   };
 
   patches = [
+    # fix pybind11Config.cmake
     (fetchpatch {
-      url = https://github.com/pybind/pybind11/commit/44a40dd61e5178985cfb1150cf05e6bfcec73042.patch;
-      sha256 = "047nzyfsihswdva96hwchnp4gj2mlbiqvmkdnhxrfi9sji8x31ka";
-    })
-    (fetchpatch {
-      name = "pytest-4-excinfo-fix.patch";
-      url = https://github.com/pybind/pybind11/commit/9fd4712121fdbb6202a35be4c788525e6c8ab826.patch;
-      sha256 = "07jjv8jlbszvr2grpm5xqxjac7jb0y68lgb1jcbb93k9vyp1hr33";
+      url = "https://github.com/pybind/pybind11/commit/d9c4e1047a95f023633a7260af5a633307438941.patch";
+      sha256 = "0kran295kj31xfs6mfha5ip132zd0pnj2dl36qzgyc1rpnha5gz4";
     })
   ];
 
-  dontUseCmakeConfigure = true;
+  nativeBuildInputs = [ cmake ];
 
-  checkInputs = [ pytest cmake ]
-    ++ (lib.optional (numpy != null) numpy)
-    ++ (lib.optional (eigen != null) eigen)
-    ++ (lib.optional (scipy != null) scipy);
-  checkPhase = ''
-    cmake ${if eigen != null then "-DEIGEN3_INCLUDE_DIR=${eigen}/include/eigen3" else ""}
-    make -j $NIX_BUILD_CORES pytest
+  dontUseCmakeBuildDir = true;
+
+  cmakeFlags = [
+    "-DEIGEN3_INCLUDE_DIR=${eigen}/include/eigen3"
+    "-DBUILD_TESTING=on"
+  ] ++ lib.optionals (python.isPy3k && !stdenv.cc.isClang) [
+    "-DPYBIND11_CXX_STANDARD=-std=c++17"
+  ];
+
+  postBuild = ''
+    # build tests
+    make
   '';
 
-  meta = {
-    homepage = https://github.com/pybind/pybind11;
+  postInstall = ''
+    make install
+    # Symlink the CMake-installed headers to the location expected by setuptools
+    mkdir -p $out/include/${python.libPrefix}
+    ln -sf $out/include/pybind11 $out/include/${python.libPrefix}/pybind11
+  '';
+
+  checkInputs = [
+    catch
+    numpy
+    pytest
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    make check
+
+    runHook postCheck
+  '';
+
+  meta = with lib; {
+    homepage = "https://github.com/pybind/pybind11";
     description = "Seamless operability between C++11 and Python";
     longDescription = ''
       Pybind11 is a lightweight header-only library that exposes
       C++ types in Python and vice versa, mainly to create Python
       bindings of existing C++ code.
     '';
-    license = lib.licenses.bsd3;
-    maintainers = [ lib.maintainers.yuriaisaka ];
+    license = licenses.bsd3;
+    maintainers = with maintainers; [ yuriaisaka dotlambda ];
   };
 }

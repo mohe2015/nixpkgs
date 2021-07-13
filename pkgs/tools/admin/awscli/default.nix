@@ -1,44 +1,43 @@
 { lib
-, python
+, nixosTests
+, python3
 , groff
 , less
-, fetchpatch
 }:
-
 let
-  py = python.override {
+  py = python3.override {
     packageOverrides = self: super: {
-      rsa = super.rsa.overridePythonAttrs (oldAttrs: rec {
-        version = "3.4.2";
-        src = oldAttrs.src.override {
-          inherit version;
-          sha256 = "25df4e10c263fb88b5ace923dd84bf9aa7f5019687b5e55382ffcdb8bede9db5";
-        };
-      });
+      # TODO: https://github.com/aws/aws-cli/pull/5712
       colorama = super.colorama.overridePythonAttrs (oldAttrs: rec {
-        version = "0.3.9";
+        version = "0.4.3";
         src = oldAttrs.src.override {
           inherit version;
-          sha256 = "48eb22f4f8461b1df5734a074b57042430fb06e1d61bd1e11b078c0fe6d7a1f1";
+          sha256 = "189n8hpijy14jfan4ha9f5n06mnl33cxz7ay92wjqgkr639s0vg9";
         };
       });
-      pyyaml = super.pyyaml_3;
     };
   };
 
-in py.pkgs.buildPythonApplication rec {
+in
+with py.pkgs; buildPythonApplication rec {
   pname = "awscli";
-  version = "1.16.215"; # N.B: if you change this, change botocore to a matching version too
+  version = "1.19.97"; # N.B: if you change this, change botocore and boto3 to a matching version too
 
-  src = py.pkgs.fetchPypi {
+  src = fetchPypi {
     inherit pname version;
-    sha256 = "13r32z8iyza4gvpf81l6l2ywv37yxi4bb08ry7cli5m6ny9xqlq8";
+    sha256 = "sha256-kecuyQMk4GWH9G0/f4Gi/hWtW4Zme9Q4i7XclcZTlNc=";
   };
+
+  # https://github.com/aws/aws-cli/issues/4837
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "docutils>=0.10,<0.16" "docutils>=0.10"
+  '';
 
   # No tests included
   doCheck = false;
 
-  propagatedBuildInputs = with py.pkgs; [
+  propagatedBuildInputs = [
     botocore
     bcdoc
     s3transfer
@@ -52,15 +51,23 @@ in py.pkgs.buildPythonApplication rec {
   ];
 
   postInstall = ''
-    mkdir -p $out/etc/bash_completion.d
-    echo "complete -C $out/bin/aws_completer aws" > $out/etc/bash_completion.d/awscli
+    mkdir -p $out/share/bash-completion/completions
+    echo "complete -C $out/bin/aws_completer aws" > $out/share/bash-completion/completions/awscli
+
     mkdir -p $out/share/zsh/site-functions
     mv $out/bin/aws_zsh_completer.sh $out/share/zsh/site-functions
+
     rm $out/bin/aws.cmd
   '';
 
+  passthru = {
+    python = py; # for aws_shell
+
+    tests = { inherit (nixosTests) awscli; };
+  };
+
   meta = with lib; {
-    homepage = https://aws.amazon.com/cli/;
+    homepage = "https://aws.amazon.com/cli/";
     description = "Unified tool to manage your AWS services";
     license = licenses.asl20;
     maintainers = with maintainers; [ muflax ];

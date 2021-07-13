@@ -1,7 +1,7 @@
 { lib
 , buildPythonPackage
 , fetchPypi
-, setuptools_scm
+, setuptools-scm
 , pytestrunner
 , pytest
 }:
@@ -15,12 +15,12 @@ buildPythonPackage rec {
     sha256 = "4801569c08bfcecfe7b0927b17f079c90f8607aca8fecaf42ded92b737162bc7";
   };
 
-  buildInputs = [ setuptools_scm pytestrunner ];
+  buildInputs = [ setuptools-scm pytestrunner ];
   checkInputs = [ pytest ];
 
   meta = with lib; {
     description = "An implementation of a multiset";
-    homepage = https://github.com/wheerd/multiset;
+    homepage = "https://github.com/wheerd/multiset";
     license = licenses.mit;
     maintainers = [ maintainers.costrouc ];
   };

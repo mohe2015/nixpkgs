@@ -1,11 +1,11 @@
-{ stdenv, fetchFromGitHub, ncurses }:
+{ lib, stdenv, fetchFromGitHub, ncurses }:
 
 stdenv.mkDerivation rec {
   pname = "pagemon";
-  version = "0.01.16";
+  version = "0.01.18";
 
   src = fetchFromGitHub {
-    sha256 = "0fpxjw6sg6r9r7yy03brri37wmmc32rhzayzlmwgmzay8rifmm7i";
+    sha256 = "1aq1mq3k8n70h81s64w2zg4kksw1y05326bn4y8p94lpaypvxqfd";
     rev = "V${version}";
     repo = "pagemon";
     owner = "ColinIanKing";
@@ -18,7 +18,7 @@ stdenv.mkDerivation rec {
     "MANDIR=$(out)/share/man/man8"
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     inherit (src.meta) homepage;
     description = "Interactive memory/page monitor for Linux";
     longDescription = ''

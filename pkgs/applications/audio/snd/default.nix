@@ -1,30 +1,30 @@
-{ stdenv, fetchurl, pkgconfig
-, gtk2, alsaLib
-, fftw, gsl
+{ lib, stdenv, fetchurl, pkg-config
+, alsa-lib, fftw, gsl, motif, xorg
 }:
 
 stdenv.mkDerivation rec {
-  name = "snd-19.6";
+  pname = "snd";
+  version = "21.1";
 
   src = fetchurl {
-    url = "mirror://sourceforge/snd/${name}.tar.gz";
-    sha256 = "0s2qv8sznvw6559bi39qj9p072azh9qcb2b86w6w8clz2azjaa76";
+    url = "mirror://sourceforge/snd/snd-${version}.tar.gz";
+    sha256 = "1jxvpgx1vqa6bwdzlzyzrjn2swjf9nfhzi9r1r96ivi0870vvjk3";
   };
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
 
-  buildInputs = [
-    gtk2 alsaLib
-    fftw gsl
-  ];
+  buildInputs = [ alsa-lib fftw gsl motif ]
+    ++ (with xorg; [ libXext libXft libXpm libXt ]);
 
-  meta = {
+  configureFlags = [ "--with-motif" ];
+
+  enableParallelBuilding = true;
+
+  meta = with lib; {
     description = "Sound editor";
-    homepage = http://ccrma.stanford.edu/software/snd;
-    platforms = stdenv.lib.platforms.linux;
-    license = stdenv.lib.licenses.free;
-    maintainers = with stdenv.lib.maintainers; [ fuuzetsu ];
+    homepage = "https://ccrma.stanford.edu/software/snd/";
+    platforms = platforms.unix;
+    license = licenses.free;
+    maintainers = with maintainers; [ ];
   };
-
-
 }

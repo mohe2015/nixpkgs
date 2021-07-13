@@ -1,4 +1,6 @@
-{ buildPythonApplication
+{ lib
+, buildPythonApplication
+, isPy3k
 , daemonize
 , dbus-python
 , fetchFromGitHub
@@ -9,15 +11,16 @@
 , pygobject3
 , pyudev
 , setproctitle
-, stdenv
 , wrapGAppsHook
 }:
 
 let
-  common = import ./common.nix { inherit stdenv fetchFromGitHub; };
+  common = import ./common.nix { inherit lib fetchFromGitHub; };
 in
 buildPythonApplication (common // rec {
   pname = "openrazer_daemon";
+
+  disabled = !isPy3k;
 
   sourceRoot = "source/daemon";
 

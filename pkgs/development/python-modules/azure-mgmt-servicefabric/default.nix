@@ -1,36 +1,42 @@
 { lib
 , buildPythonPackage
 , fetchPypi
+, python
+, isPy3k
 , msrest
 , msrestazure
 , azure-common
+, azure-mgmt-core
 , azure-mgmt-nspkg
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-servicefabric";
-  version = "0.3.0";
+  version = "1.0.0";
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "0cirsp8wnsswba6gbmw4s2ljsjwi3855my063gvi2mqr55spvx2n";
+    sha256 = "de35e117912832c1a9e93109a8d24cab94f55703a9087b2eb1c5b0655b3b1913";
   };
 
   propagatedBuildInputs = [
     msrest
     msrestazure
     azure-common
+    azure-mgmt-core
     azure-mgmt-nspkg
   ];
+
+  pythonNamespaces = [ "azure.mgmt" ];
 
   # has no tests
   doCheck = false;
 
   meta = with lib; {
     description = "This is the Microsoft Azure Service Fabric Management Client Library";
-    homepage = https://docs.microsoft.com/en-us/python/api/overview/azure/servicefabric?view=azure-python;
+    homepage = "https://github.com/Azure/azure-sdk-for-python";
     license = licenses.mit;
-    maintainers = with maintainers; [ mwilsoninsight ];
+    maintainers = with maintainers; [ maxwilson ];
   };
 }

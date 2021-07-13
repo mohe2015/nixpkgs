@@ -7,15 +7,15 @@
 , crcmod
 }:
 
-buildPythonPackage {
+buildPythonPackage rec {
   pname = "fx2";
-  version = "unstable-2019-08-27";
+  version = "0.9";
 
   src = fetchFromGitHub {
     owner = "whitequark";
     repo = "libfx2";
-    rev = "dd1e42c7b46ff410dbb18beab46111bb5491400c";
-    sha256 = "0xvlmx6ym0ylrvnlqzf18d475wa0mfci7wkdbv30gl3hgdhsppjz";
+    rev = version;
+    sha256 = "sha256-Uk+K7ym92JX4fC3PyTNxd0UvBzoNZmtbscBYjSWChuk=";
   };
 
   nativeBuildInputs = [ sdcc ];
@@ -38,7 +38,7 @@ buildPythonPackage {
 
   meta = with lib; {
     description = "Chip support package for Cypress EZ-USB FX2 series microcontrollers";
-    homepage = https://github.com/whitequark/libfx2;
+    homepage = "https://github.com/whitequark/libfx2";
     license = licenses.bsd0;
     maintainers = with maintainers; [ emily ];
   };

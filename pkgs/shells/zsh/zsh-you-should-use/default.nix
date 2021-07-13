@@ -1,14 +1,14 @@
-{ stdenv, fetchFromGitHub }:
+{ lib, stdenv, fetchFromGitHub }:
 
 stdenv.mkDerivation rec {
   pname = "zsh-you-should-use";
-  version = "1.4.0";
+  version = "1.7.3";
 
   src = fetchFromGitHub {
     owner = "MichaelAquilina";
     repo = pname;
     rev = version;
-    sha256 = "1n0mcgahx40acqjj617k0rhqpzjqjaa9xfs4b1xrjp3qdy9s0ns0";
+    sha256 = "1dz48rd66priqhxx7byndqhbmlwxi1nfw8ik25k0z5k7k754brgy";
   };
 
   dontBuild = true;
@@ -17,8 +17,8 @@ stdenv.mkDerivation rec {
     install -D you-should-use.plugin.zsh $out/share/zsh/plugins/you-should-use/you-should-use.plugin.zsh
   '';
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/MichaelAquilina/zsh-you-should-use;
+  meta = with lib; {
+    homepage = "https://github.com/MichaelAquilina/zsh-you-should-use";
     license = licenses.gpl3;
     description = "ZSH plugin that reminds you to use existing aliases for commands you just typed";
     maintainers = with maintainers; [ ma27 ];

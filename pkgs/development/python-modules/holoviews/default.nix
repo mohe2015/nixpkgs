@@ -11,18 +11,20 @@
 , bokeh
 , scipy
 , panel
+, colorcet
 }:
 
 buildPythonPackage rec {
   pname = "holoviews";
-  version = "1.12.3";
+  version = "1.14.4";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "df64c0f163fe8b43d28cf5bcdeb8abc45d882aedca525b870f17987edd0c80a2";
+    sha256 = "08e8be82c2e514e1700a75f02307f414179dc0ecfa2202702dd304a381909eaa";
   };
 
   propagatedBuildInputs = [
+    colorcet
     param
     numpy
     pyviz-comms
@@ -40,7 +42,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Python data analysis and visualization seamless and simple";
-    homepage = http://www.holoviews.org/;
+    homepage = "http://www.holoviews.org/";
     license = licenses.bsd3;
     maintainers = [ maintainers.costrouc ];
   };

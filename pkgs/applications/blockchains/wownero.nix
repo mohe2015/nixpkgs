@@ -1,28 +1,39 @@
-{ stdenv, fetchFromGitHub, cmake, pkgconfig, git
-, boost, miniupnpc_2, openssl, unbound, cppzmq
-, zeromq, pcsclite, readline, libsodium, rapidjson
+{ lib, stdenv, fetchgit, cmake, boost, miniupnpc_2, openssl, unbound
+, readline, libsodium, rapidjson, fetchurl
 }:
 
-with stdenv.lib;
+with lib;
+
+let
+  randomwowVersion = "1.1.7";
+  randomwow = fetchurl {
+    url = "https://github.com/wownero/RandomWOW/archive/${randomwowVersion}.tar.gz";
+    sha256 = "1xp76zf01hnhnk6rjvqjav9n9pnvxzxlzqa5rc574d1c2qczfy3q";
+  };
+in
 
 stdenv.mkDerivation rec {
   pname = "wownero";
+  version = "0.8.0.1";
 
-  version = "0.6.1.2";
-  src = fetchFromGitHub {
-    owner = "wownero";
-    repo = "wownero";
-    rev    = "v${version}";
-    sha256 = "03q3pviyhrldpa3f4ly4d97jr39hvrz37chl102bap0790d9lk09";
-    fetchSubmodules = true;
+  src = fetchgit {
+    url = "https://git.wownero.com/wownero/wownero.git";
+    rev = "v${version}";
+    sha256 = "15443xv6q1nw4627ajk6k4ghhahvh82lb4gyb8nvq753p2v838g3";
+    fetchSubmodules = false;
   };
 
-  nativeBuildInputs = [ cmake pkgconfig git ];
+  nativeBuildInputs = [ cmake ];
 
   buildInputs = [
-    boost miniupnpc_2 openssl unbound rapidjson
-    cppzmq zeromq pcsclite readline libsodium
+    boost miniupnpc_2 openssl unbound rapidjson readline libsodium
   ];
+
+  postUnpack = ''
+    rm -r $sourceRoot/external/RandomWOW
+    unpackFile ${randomwow}
+    mv RandomWOW-${randomwowVersion} $sourceRoot/external/RandomWOW
+  '';
 
   cmakeFlags = [
     "-DReadline_ROOT_DIR=${readline.dev}"
@@ -30,15 +41,18 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    description = "Wownero is a fork of the cryptocurrency Monero with primary alterations";
-    longDescription = ''
-      Wownero’s emission is capped and supply is finite. Wownero is a fairly
-      launched coin with no premine. It’s not a fork of another blockchain. With
-      its own genesis block there is no degradation of privacy caused by ring
-      signatures using different participants for the same transaction outputs.
-      Unlike opposing forks.
+    description = ''
+      A privacy-centric memecoin that was fairly launched on April 1, 2018 with
+      no pre-mine, stealth-mine or ICO
     '';
-    homepage    = http://wownero.org/;
+    longDescription = ''
+      Wownero has a maximum supply of around 184 million WOW with a slow and
+      steady emission over 50 years. It is a fork of Monero, but with its own
+      genesis block, so there is no degradation of privacy due to ring
+      signatures using different participants for the same tx outputs on
+      opposing forks.
+    '';
+    homepage    = "https://wownero.org/";
     license     = licenses.bsd3;
     platforms   = platforms.linux;
     maintainers = with maintainers; [ fuwa ];

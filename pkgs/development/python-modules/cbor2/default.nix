@@ -1,22 +1,39 @@
-{ lib, buildPythonPackage, fetchPypi, pytest, pytestcov, setuptools_scm }:
+{ lib
+, stdenv
+, buildPythonPackage
+, fetchPypi
+, pytestCheckHook
+, pytest-cov
+, setuptools-scm
+}:
 
 buildPythonPackage rec {
   pname = "cbor2";
-  version = "4.1.2";
+  version = "5.4.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1bp9l3wdj0wm15xlmlcwbgv6hc6vcfx39nssikj8fkwnd7d1bdhp";
+    sha256 = "a7926f7244b08c413f1a4fa71a81aa256771c75bdf1a4fd77308547a2d63dd48";
   };
 
-  nativeBuildInputs = [ setuptools_scm ];
-  checkInputs = [ pytest pytestcov ];
+  nativeBuildInputs = [ setuptools-scm ];
 
-  checkPhase = "pytest";
+  checkInputs = [
+    pytest-cov
+    pytestCheckHook
+  ];
+
+  # https://github.com/agronholm/cbor2/issues/99
+  disabledTests = lib.optionals stdenv.is32bit [
+    "test_huge_truncated_bytes"
+    "test_huge_truncated_string"
+  ];
+
+  pythonImportsCheck = [ "cbor2" ];
 
   meta = with lib; {
-    description = "Pure Python CBOR (de)serializer with extensive tag support";
-    homepage = https://github.com/agronholm/cbor2;
+    description = "Python CBOR (de)serializer with extensive tag support";
+    homepage = "https://github.com/agronholm/cbor2";
     license = licenses.mit;
     maintainers = with maintainers; [ taneb ];
   };

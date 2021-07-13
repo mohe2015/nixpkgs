@@ -1,23 +1,26 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
+, substituteAll
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , gettext
 , gperf
 , sqlite
 , librest
 , libarchive
 , libsoup
-, gnome3
+, gnome
 , libxml2
 , lua5_3
 , liboauth
 , libgdata
 , libmediaart
 , grilo
+, gst_all_1
 , gnome-online-accounts
 , gmime
+, gom
 , json-glib
 , avahi
 , tracker
@@ -28,17 +31,32 @@
 
 stdenv.mkDerivation rec {
   pname = "grilo-plugins";
-  version = "0.3.9";
+  version = "0.3.13";
 
   src = fetchurl {
-    url = "mirror://gnome/sources/${pname}/${stdenv.lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    sha256 = "1hv84b56qjic8vz8iz46ikhrxx31l29ilbr8dm5qcghbd8ikw8j1";
+    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
+    sha256 = "HEMF1nNkqTBUODbMGYLzDpRpc7j/avPv4x2HcJq1IPg=";
   };
+
+  patches = [
+    # grl-chromaprint requires the following GStreamer elements:
+    # * fakesink (gstreamer)
+    # * playbin (gst-plugins-base)
+    # * chromaprint (gst-plugins-bad)
+    (substituteAll {
+      src = ./chromaprint-gst-plugins.patch;
+      load_plugins = lib.concatMapStrings (plugin: ''gst_registry_scan_path(gst_registry_get(), "${plugin}/lib/gstreamer-1.0");'') (with gst_all_1; [
+        gstreamer
+        gst-plugins-base
+        gst-plugins-bad
+      ]);
+    })
+  ];
 
   nativeBuildInputs = [
     meson
     ninja
-    pkgconfig
+    pkg-config
     gettext
     itstool
     gperf # for lua-factory
@@ -57,25 +75,26 @@ stdenv.mkDerivation rec {
     libarchive
     libsoup
     gmime
+    gom
     json-glib
     avahi
     libmediaart
     tracker
     dleyna-server
+    gst_all_1.gstreamer
   ];
 
   passthru = {
-    updateScript = gnome3.updateScript {
+    updateScript = gnome.updateScript {
       packageName = pname;
-      attrPath = "gnome3.${pname}";
       versionPolicy = "none";
     };
   };
 
-  meta = with stdenv.lib; {
-    homepage = https://wiki.gnome.org/Projects/Grilo;
+  meta = with lib; {
+    homepage = "https://wiki.gnome.org/Projects/Grilo";
     description = "A collection of plugins for the Grilo framework";
-    maintainers = gnome3.maintainers;
+    maintainers = teams.gnome.members;
     license = licenses.lgpl21;
     platforms = platforms.linux;
   };

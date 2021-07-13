@@ -2,31 +2,37 @@
 , buildPythonPackage
 , fetchFromGitHub
 , nmigen
+, setuptools
+, setuptools-scm
 }:
 
 buildPythonPackage rec {
   pname = "nmigen-boards";
-  version = "unstable-2019-08-30";
-  realVersion = lib.substring 0 7 src.rev;
+  version = "unstable-2021-02-09";
+  # python setup.py --version
+  realVersion = "0.1.dev173+g${lib.substring 0 7 src.rev}";
 
   src = fetchFromGitHub {
-    owner = "m-labs";
+    owner = "nmigen";
     repo = "nmigen-boards";
-    rev = "3b80b3a3749ae8f123ff258a25e81bd21412aed4";
-    sha256 = "01qynxip8bq23jfjc5wjd97vxfvhld2zb8sxphwf0zixrmmyaspi";
+    rev = "a35d870a994c2919116b2c06166dc127febb1512";
+    sha256 = "1flbcyb2xz174dgqv2964qra80xj2vbzbqwjb27shvxm6knj9ikf";
   };
 
-  propagatedBuildInputs = [ nmigen ];
+  nativeBuildInputs = [ setuptools-scm ];
+  propagatedBuildInputs = [ setuptools nmigen ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace 'versioneer.get_version()' '"${realVersion}"'
+  preBuild = ''
+    export SETUPTOOLS_SCM_PRETEND_VERSION="${realVersion}"
   '';
+
+  # no tests
+  doCheck = false;
 
   meta = with lib; {
     description = "Board and connector definitions for nMigen";
-    homepage = https://github.com/m-labs/nmigen-boards;
-    license = licenses.bsd0;
+    homepage = "https://github.com/nmigen/nmigen-boards";
+    license = licenses.bsd2;
     maintainers = with maintainers; [ emily ];
   };
 }

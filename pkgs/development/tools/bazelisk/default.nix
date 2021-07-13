@@ -1,19 +1,23 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "bazelisk";
-  version = "1.0";
+  version = "1.9.0";
 
   src = fetchFromGitHub {
     owner = "bazelbuild";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0516rx3qx6nxavy0a1qxjx2rcvdfb2ggig0q4n7fkmrxbnwxh2c9";
+    sha256 = "sha256-APHRNCJNQ4cheY+wBB8q4fcOOL6SFeg5SflvnrxjYhI=";
   };
 
-  modSha256 = "1f73j6ryidzi3kfy3rhsqx047vzwvzaqcsl7ykhg87rn2l2s7fdl";
+  vendorSha256 = "sha256-+B+5GQTEiCwLCoGB5uIIJEWJRjylgt9txcsJCXcOAQs=";
 
-  meta = with stdenv.lib; {
+  doCheck = false;
+
+  buildFlagsArray = [ "-ldflags=-s -w -X main.BazeliskVersion=${version}" ];
+
+  meta = with lib; {
     description = "A user-friendly launcher for Bazel";
     longDescription = ''
       BEWARE: This package does not work on NixOS.

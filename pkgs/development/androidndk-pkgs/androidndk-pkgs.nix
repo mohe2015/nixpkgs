@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , makeWrapper
 , runCommand, wrapBintoolsWith, wrapCCWith
 , buildAndroidndk, androidndk, targetAndroidndkPkgs
@@ -48,15 +48,17 @@ let
   hostInfo = ndkInfoFun stdenv.hostPlatform;
   targetInfo = ndkInfoFun stdenv.targetPlatform;
 
-  prefix = stdenv.lib.optionalString (stdenv.targetPlatform != stdenv.hostPlatform) (stdenv.targetPlatform.config + "-");
+  prefix = lib.optionalString (stdenv.targetPlatform != stdenv.hostPlatform) (stdenv.targetPlatform.config + "-");
 in
 
 rec {
   # Misc tools
-  binaries = runCommand "ndk-gcc-binutils" {
+  binaries = runCommand "ndk-toolchain-binutils" {
+    pname = "ndk-toolchain-binutils";
+    inherit (androidndk) version;
     isClang = true; # clang based cc, but bintools ld
     nativeBuildInputs = [ makeWrapper ];
-    propgatedBuildInputs = [ androidndk ];
+    propagatedBuildInputs = [ androidndk ];
   } ''
     mkdir -p $out/bin
 
@@ -82,7 +84,10 @@ rec {
   };
 
   clang = wrapCCWith {
-    cc = binaries;
+    cc = binaries // {
+      # for packages expecting libcompiler-rt, etc. to come from here (stdenv.cc.cc.lib)
+      lib = targetAndroidndkPkgs.libraries;
+    };
     bintools = binutils;
     libc = targetAndroidndkPkgs.libraries;
     extraBuildCommands = ''
@@ -103,6 +108,6 @@ rec {
     cp -r ${buildAndroidndk}/libexec/android-sdk/ndk-bundle/sysroot/usr/include $out/include
     chmod +w $out/include
     cp -r ${buildAndroidndk}/libexec/android-sdk/ndk-bundle/sysroot/usr/include/${targetInfo.triple}/* $out/include
-    ln -s ${buildAndroidndk}/libexec/android-sdk/ndk-bundle/platforms/android-${stdenv.hostPlatform.sdkVer}/arch-${hostInfo.arch}/usr/lib $out/lib
+    ln -s ${buildAndroidndk}/libexec/android-sdk/ndk-bundle/platforms/android-${stdenv.hostPlatform.sdkVer}/arch-${hostInfo.arch}/usr/${if hostInfo.arch == "x86_64" then "lib64" else "lib"} $out/lib
   '';
 }

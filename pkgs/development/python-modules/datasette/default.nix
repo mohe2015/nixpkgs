@@ -1,73 +1,113 @@
 { lib
 , buildPythonPackage
 , fetchFromGitHub
+, aiofiles
+, asgi-csrf
 , click
 , click-default-group
-, sanic
+, itsdangerous
+, janus
 , jinja2
 , hupper
+, mergedeep
 , pint
 , pluggy
-, pytest
-, pytestrunner
+, python-baseconv
+, pyyaml
+, uvicorn
+, httpx
+# Check Inputs
+, pytestCheckHook
+, pytest-runner
 , pytest-asyncio
-, black
+, pytest-timeout
 , aiohttp
 , beautifulsoup4
+, asgiref
+, setuptools
+, trustme
+, pythonOlder
 }:
 
 buildPythonPackage rec {
   pname = "datasette";
-  version = "0.28";
+  version = "0.57.1";
+  disabled = pythonOlder "3.6";
 
   src = fetchFromGitHub {
     owner = "simonw";
-    repo = "datasette";
+    repo = pname;
     rev = version;
-    sha256 = "1m2s03gyq0ghjc3s0b5snpinisddywpgii2f0zqa3v4ljmzanx7h";
+    sha256 = "sha256-BHsf3GOganPhsDiZlRxvAsRZH/Sq+Jr+CZcc2ubce+8=";
   };
 
-  buildInputs = [ pytestrunner ];
+  nativeBuildInputs = [ pytest-runner ];
 
   propagatedBuildInputs = [
+    aiofiles
+    asgi-csrf
+    asgiref
     click
     click-default-group
-    sanic
-    jinja2
+    httpx
     hupper
+    itsdangerous
+    janus
+    jinja2
+    mergedeep
     pint
     pluggy
+    python-baseconv
+    pyyaml
+    setuptools
+    uvicorn
   ];
 
   checkInputs = [
-    pytest
-    pytest-asyncio
     aiohttp
     beautifulsoup4
-    black
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+    trustme
   ];
 
   postConfigure = ''
     substituteInPlace setup.py \
-      --replace "click-default-group==1.2" "click-default-group" \
-      --replace "Sanic==0.7.0" "Sanic" \
-      --replace "hupper==1.0" "hupper" \
-      --replace "pint==0.8.1" "pint" \
-      --replace "Jinja2==2.10.1" "Jinja2"
+      --replace "click-default-group~=1.2.2" "click-default-group" \
+      --replace "hupper~=1.9" "hupper" \
+      --replace "pint~=0.9" "pint" \
+      --replace "pluggy~=0.13.0" "pluggy" \
+      --replace "uvicorn~=0.11" "uvicorn" \
+      --replace "PyYAML~=5.3" "PyYAML"
   '';
 
-  # many tests require network access
-  checkPhase = ''
-    pytest --ignore tests/test_api.py \
-           --ignore tests/test_csv.py \
-           --ignore tests/test_html.py
-  '';
+  # takes 30-180 mins to run entire test suite, not worth the CPU resources, slows down reviews
+  # with pytest-xdist, it still takes around 10 mins with 32 cores
+  # just run the csv tests, as this should give some indictation of correctness
+  pytestFlagsArray = [
+    "tests/test_csv.py"
+  ];
+
+  disabledTests = [
+    "facet"
+    "_invalid_database" # checks error message when connecting to invalid database
+  ];
+
+  pythonImportsCheck = [
+    "datasette"
+    "datasette.cli"
+    "datasette.app"
+    "datasette.database"
+    "datasette.renderer"
+    "datasette.tracer"
+    "datasette.plugins"
+  ];
 
   meta = with lib; {
-    description = "An instant JSON API for your SQLite databases";
-    homepage = https://github.com/simonw/datasette;
+    description = "Multi-tool for exploring and publishing data";
+    homepage = "https://datasette.io/";
     license = licenses.asl20;
     maintainers = [ maintainers.costrouc ];
   };
-
 }

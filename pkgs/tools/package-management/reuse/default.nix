@@ -1,25 +1,33 @@
 { lib, python3Packages, fetchFromGitHub }:
 
-with python3Packages;
-
-buildPythonApplication rec {
+python3Packages.buildPythonApplication rec {
   pname = "reuse";
-  version = "0.4.1";
+  version = "0.13.0";
 
   src = fetchFromGitHub {
     owner = "fsfe";
     repo = "reuse-tool";
     rev = "v${version}";
-    sha256 = "0gwipwikhxsk0p8wvdl90xm7chfi2jywb1namzznyymifl1vsbgh";
+    sha256 = "0didqsbvrn06aylp71jl3hqb4rd95d8s613xz6jw6mngyjqv0hq2";
   };
 
-  propagatedBuildInputs = [ debian license-expression requests ];
+  propagatedBuildInputs = with python3Packages; [
+    binaryornot
+    boolean-py
+    debian
+    jinja2
+    license-expression
+    requests
+    setuptools
+    setuptools-scm
+  ];
 
-  checkInputs = [ pytest ];
+  checkInputs = with python3Packages; [ pytestCheckHook ];
 
   meta = with lib; {
     description = "A tool for compliance with the REUSE Initiative recommendations";
-    license = with licenses; [ asl20 cc-by-sa-40 cc0 gpl3 ];
+    homepage = "https://github.com/fsfe/reuse-tool";
+    license = with licenses; [ asl20 cc-by-sa-40 cc0 gpl3Plus ];
     maintainers = [ maintainers.FlorianFranzen ];
   };
 }

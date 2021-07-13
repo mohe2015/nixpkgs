@@ -6,28 +6,28 @@
 , py
 , six
 , virtualenv
-, setuptools_scm
+, setuptools-scm
 , toml
 , filelock
 }:
 
 buildPythonPackage rec {
   pname = "tox";
-  version = "3.7.0";
+  version = "3.23.1";
 
-  buildInputs = [ setuptools_scm ];
+  buildInputs = [ setuptools-scm ];
   propagatedBuildInputs = [ packaging pluggy py six virtualenv toml filelock ];
 
   doCheck = false;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "25ef928babe88c71e3ed3af0c464d1160b01fca2dd1870a5bb26c2dea61a17fc";
+    sha256 = "307a81ddb82bd463971a273f33e9533a24ed22185f27db8ce3386bff27d324e3";
   };
 
   meta = with lib; {
     description = "Virtualenv-based automation of test activities";
-    homepage = https://tox.readthedocs.io/;
+    homepage = "https://tox.readthedocs.io/";
     license = licenses.mit;
   };
 }

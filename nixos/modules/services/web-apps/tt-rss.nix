@@ -548,7 +548,7 @@ let
             index = "index.php";
           };
 
-          locations."~ \.php$" = {
+          locations."~ \\.php$" = {
             extraConfig = ''
               fastcgi_split_path_info ^(.+\.php)(/.+)$;
               fastcgi_pass unix:${config.services.phpfpm.pools.${cfg.pool}.socket};
@@ -631,9 +631,10 @@ let
         serviceConfig = {
           User = "${cfg.user}";
           Group = "tt_rss";
-          ExecStart = "${pkgs.php}/bin/php ${cfg.root}/update.php --daemon";
-          StandardOutput = "syslog";
-          StandardError = "syslog";
+          ExecStart = "${pkgs.php}/bin/php ${cfg.root}/update.php --daemon --quiet";
+          Restart = "on-failure";
+          RestartSec = "60";
+          SyslogIdentifier = "tt-rss";
         };
 
         wantedBy = [ "multi-user.target" ];
@@ -643,7 +644,7 @@ let
 
     services.mysql = mkIf mysqlLocal {
       enable = true;
-      package = mkDefault pkgs.mysql;
+      package = mkDefault pkgs.mariadb;
       ensureDatabases = [ cfg.database.name ];
       ensureUsers = [
         {

@@ -1,7 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
+, nix-update-script
 , pantheon
-, pkgconfig
+, pkg-config
 , meson
 , ninja
 , gettext
@@ -16,19 +17,21 @@
 , libnotify
 , libunity
 , pango
-, plank
+, elementary-dock
 , bamf
 , sqlite
 , libdbusmenu-gtk3
 , zeitgeist
 , glib-networking
 , elementary-icon-theme
+, libcloudproviders
+, libgit2-glib
 , wrapGAppsHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "elementary-files";
-  version = "4.1.9";
+  version = "4.5.0";
 
   repoName = "files";
 
@@ -38,13 +41,12 @@ stdenv.mkDerivation rec {
     owner = "elementary";
     repo = repoName;
     rev = version;
-    sha256 = "12p1li9a7kqdlgkq20svaly5kr661ww93qngaiic6zv1bdw2bpmv";
+    sha256 = "sha256-wtQW1poX791DAlSFdVV9psnCfBDeVXI2fDZ2GcvvNn8=";
   };
 
   passthru = {
-    updateScript = pantheon.updateScript {
-      inherit repoName;
-      attrPath = pname;
+    updateScript = nix-update-script {
+      attrPath = "pantheon.${pname}";
     };
   };
 
@@ -54,7 +56,7 @@ stdenv.mkDerivation rec {
     glib-networking
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -62,21 +64,25 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     bamf
+    elementary-dock
     elementary-icon-theme
     granite
     gtk3
     libcanberra
+    libcloudproviders
     libdbusmenu-gtk3
     libgee
+    libgit2-glib
     libnotify
     libunity
     pango
-    plank
     sqlite
     zeitgeist
   ];
 
-  patches = [ ./hardcode-gsettings.patch ];
+  patches = [
+    ./0001-filechooser-module-hardcode-gsettings-for-nixos.patch
+  ];
 
   postPatch = ''
     chmod +x meson/post_install.py
@@ -86,9 +92,9 @@ stdenv.mkDerivation rec {
       --subst-var-by ELEMENTARY_FILES_GSETTINGS_PATH ${glib.makeSchemaPath "$out" "${pname}-${version}"}
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "File browser designed for elementary OS";
-    homepage = https://github.com/elementary/files;
+    homepage = "https://github.com/elementary/files";
     license = licenses.lgpl3;
     platforms = platforms.linux;
     maintainers = pantheon.maintainers;

@@ -1,15 +1,15 @@
-{ stdenv, buildPythonPackage, fetchPypi, setuptools_scm, pytest }:
+{ lib, buildPythonPackage, fetchPypi, setuptools-scm, pytest }:
 
 buildPythonPackage rec {
   pname = "pytest-runner";
-  version = "4.2";
+  version = "5.3.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "d23f117be39919f00dd91bffeb4f15e031ec797501b717a245e377aee0f577be";
+    sha256 = "0fce5b8dc68760f353979d99fdd6b3ad46330b6b1837e2077a89ebcf204aac91";
   };
 
-  nativeBuildInputs = [ setuptools_scm pytest ];
+  nativeBuildInputs = [ setuptools-scm pytest ];
 
   postPatch = ''
     rm pytest.ini
@@ -22,9 +22,9 @@ buildPythonPackage rec {
   # Fixture not found
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Invoke py.test as distutils command with dependency resolution";
-    homepage = https://github.com/pytest-dev/pytest-runner;
+    homepage = "https://github.com/pytest-dev/pytest-runner";
     license = licenses.mit;
   };
 }

@@ -4,6 +4,7 @@
 
 { nixpkgs
 , officialRelease
+, supportedSystems
 , pkgs ? import nixpkgs.outPath {}
 , nix ? pkgs.nix
 , lib-tests ? import ../../lib/tests/release.nix { inherit pkgs; }
@@ -17,15 +18,18 @@ releaseTools.sourceTarball {
 
   inherit officialRelease;
   version = pkgs.lib.fileContents ../../.version;
-  versionSuffix = "pre${toString nixpkgs.revCount}.${nixpkgs.shortRev}";
+  versionSuffix = "pre${
+    if nixpkgs ? lastModified
+    then builtins.substring 0 8 (nixpkgs.lastModifiedDate or nixpkgs.lastModified)
+    else toString nixpkgs.revCount}.${nixpkgs.shortRev or "dirty"}";
 
-  buildInputs = [ nix.out jq lib-tests ];
+  buildInputs = [ nix.out jq lib-tests pkgs.brotli ];
 
   configurePhase = ''
     eval "$preConfigure"
     releaseName=nixpkgs-$VERSION$VERSION_SUFFIX
     echo -n $VERSION_SUFFIX > .version-suffix
-    echo -n ${nixpkgs.rev or nixpkgs.shortRev} > .git-revision
+    echo -n ${nixpkgs.rev or nixpkgs.shortRev or "dirty"} > .git-revision
     echo "release name is $releaseName"
     echo "git-revision is $(cat .git-revision)"
   '';
@@ -35,7 +39,8 @@ releaseTools.sourceTarball {
   doCheck = true;
 
   checkPhase = ''
-    export NIX_DB_DIR=$TMPDIR
+    set -o pipefail
+
     export NIX_STATE_DIR=$TMPDIR
     export NIX_PATH=nixpkgs=$TMPDIR/barf.nix
     opts=(--option build-users-group "")
@@ -62,7 +67,7 @@ releaseTools.sourceTarball {
     fi
 
     # Check that all-packages.nix evaluates on a number of platforms without any warnings.
-    for platform in i686-linux x86_64-linux x86_64-darwin; do
+    for platform in ${pkgs.lib.concatStringsSep " " supportedSystems}; do
         header "checking Nixpkgs on $platform"
 
         nix-env -f . \
@@ -80,12 +85,10 @@ releaseTools.sourceTarball {
             --show-trace --argstr system "$platform" \
             -qa --drv-path --system-filter \* --system --meta --xml \
             "''${opts[@]}" > /dev/null
-        stopNest
     done
 
     header "checking eval-release.nix"
     nix-instantiate --eval --strict --show-trace ./maintainers/scripts/eval-release.nix > /dev/null
-    stopNest
 
     header "checking find-tarballs.nix"
     nix-instantiate --readonly-mode --eval --strict --show-trace --json \
@@ -97,7 +100,17 @@ releaseTools.sourceTarball {
       echo "suspiciously low number of URLs"
       exit 1
     fi
-    stopNest
+
+    header "generating packages.json"
+    mkdir -p $out/nix-support
+    echo -n '{"version":2,"packages":' > tmp
+    nix-env -f . -I nixpkgs=${src} -qa --json --arg config 'import ${./packages-config.nix}' "''${opts[@]}" >> tmp
+    echo -n '}' >> tmp
+    packages=$out/packages.json.br
+    < tmp sed "s|$(pwd)/||g" | jq -c | brotli -9 > $packages
+    rm tmp
+
+    echo "file json-br $packages" >> $out/nix-support/hydra-build-products
   '';
 
   distPhase = ''

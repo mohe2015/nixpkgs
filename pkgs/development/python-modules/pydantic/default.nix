@@ -1,46 +1,44 @@
 { lib
 , buildPythonPackage
-, fetchPypi
-, ujson
 , email_validator
+, fetchFromGitHub
+, pytest-mock
+, pytestCheckHook
+, python-dotenv
+, pythonOlder
 , typing-extensions
-, python
-, isPy3k
+, ujson
 }:
 
 buildPythonPackage rec {
   pname = "pydantic";
-  version = "0.31";
-  disabled = !isPy3k;
+  version = "1.8.2";
+  disabled = pythonOlder "3.7";
 
-  src = fetchPypi {
-    inherit pname version;
-    sha256 = "0x9xc5hpyrlf05dc4bx9f7v51fahxcahkvh0ij8ibay15nwli53d";
+  src = fetchFromGitHub {
+    owner = "samuelcolvin";
+    repo = pname;
+    rev = "v${version}";
+    sha256 = "06162dss6mvi7wiy2lzxwvzajwxgy8b2fyym7qipaj7zibcqalq2";
   };
 
   propagatedBuildInputs = [
-    ujson
     email_validator
+    python-dotenv
     typing-extensions
+    ujson
   ];
 
-  checkPhase = ''
-    ${python.interpreter} -c """
-from datetime import datetime
-from typing import List
-from pydantic import BaseModel
+  checkInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
 
-class User(BaseModel):
-    id: int
-    name = 'John Doe'
-    signup_ts: datetime = None
-    friends: List[int] = []
-
-external_data = {'id': '123', 'signup_ts': '2017-06-01 12:22', 'friends': [1, '2', b'3']}
-user = User(**external_data)
-assert user.id is "123"
-"""
+  preCheck = ''
+    export HOME=$(mktemp -d)
   '';
+
+  pythonImportsCheck = [ "pydantic" ];
 
   meta = with lib; {
     homepage = "https://github.com/samuelcolvin/pydantic";

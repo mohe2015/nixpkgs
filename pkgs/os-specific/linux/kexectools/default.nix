@@ -1,4 +1,4 @@
-{ stdenv, buildPackages, fetchurl, zlib, fetchpatch }:
+{ lib, stdenv, buildPackages, fetchurl, zlib, fetchpatch }:
 
 stdenv.mkDerivation rec {
   pname = "kexec-tools";
@@ -14,11 +14,14 @@ stdenv.mkDerivation rec {
 
   hardeningDisable = [ "format" "pic" "relro" "pie" ];
 
+  # Prevent kexec-tools from using uname to detect target, which is wrong in
+  # cases like compiling for aarch32 on aarch64
+  configurePlatforms = [ "build" "host" ];
   configureFlags = [ "BUILD_CC=${buildPackages.stdenv.cc.targetPrefix}cc" ];
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   buildInputs = [ zlib ];
 
-  patches = stdenv.lib.optionals stdenv.hostPlatform.isi686 [
+  patches = [
     # fix build on i686
     # See: https://src.fedoraproject.org/rpms/kexec-tools/c/cb1e5463b5298b064e9b6c86ad6fe3505fec9298
     (fetchpatch {
@@ -28,8 +31,8 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  meta = with stdenv.lib; {
-    homepage = http://horms.net/projects/kexec/kexec-tools;
+  meta = with lib; {
+    homepage = "http://horms.net/projects/kexec/kexec-tools";
     description = "Tools related to the kexec Linux feature";
     platforms = platforms.linux;
     badPlatforms = [

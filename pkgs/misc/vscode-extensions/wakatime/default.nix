@@ -1,4 +1,4 @@
-{ stdenv
+{ lib
 , wakatime, vscode-utils }:
 
 let
@@ -8,16 +8,16 @@ in
     mktplcRef = {
       name = "vscode-wakatime";
       publisher = "WakaTime";
-      version = "2.2.0";
-      sha256 = "0mwn72cp8rd9zc527k9l08iyap1wyqzpvzbj8142fa7nsy64jd04";
+      version = "4.0.9";
+      sha256 = "0sm2fr9zbk1759r52dpnz9r7xbvxladlpinlf2i0hyaa06bhp3b1";
     };
 
     postPatch = ''
-      mkdir -p wakatime-master
-      cp -rt wakatime-master --no-preserve=all ${wakatime}/lib/python*/site-packages/wakatime
+      mkdir wakatime-cli
+      ln -s ${wakatime}/bin/wakatime ./wakatime-cli/wakatime-cli
     '';
 
-    meta = with stdenv.lib; {
+    meta = with lib; {
       description = ''
         Visual Studio Code plugin for automatic time tracking and metrics generated
         from your programming activity

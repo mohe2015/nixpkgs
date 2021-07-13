@@ -1,12 +1,12 @@
-{ fetchurl, stdenv, ncurses }:
+{ fetchurl, lib, stdenv, ncurses }:
 
 stdenv.mkDerivation rec {
   pname = "nmon";
-  version = "16k";
+  version = "16m";
 
   src = fetchurl {
     url = "mirror://sourceforge/nmon/lmon${version}.c";
-    sha256 = "17nbxrnl7kqiaaxn2hwyi65gphbl3wybbyp9vri2q5ifdis3ssib";
+    sha256 = "1hazgrq3m01dzv05639yis1mypcp0jf167n9gqwd3wgxzm2lvv9b";
   };
 
   buildInputs = [ ncurses ];
@@ -17,7 +17,7 @@ stdenv.mkDerivation rec {
     cp nmon $out/bin
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "AIX & Linux Performance Monitoring tool";
     homepage = "http://nmon.sourceforge.net";
     license = licenses.gpl3Plus;

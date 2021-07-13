@@ -1,25 +1,25 @@
-{ stdenv, fetchFromGitHub, pkgconfig, autoreconfHook, openssl, db48, boost
-, zlib, miniupnpc, utillinux, protobuf, qrencode, libevent, python3
+{ lib, stdenv, fetchFromGitHub, pkg-config, autoreconfHook, openssl, db48, boost
+, zlib, miniupnpc, util-linux, protobuf, qrencode, libevent, python3
 , withGui, wrapQtAppsHook ? null, qtbase ? null, qttools ? null
 , Foundation, ApplicationServices, AppKit }:
 
-with stdenv.lib;
+with lib;
 
 stdenv.mkDerivation rec {
   name = "bitcoin" + (toString (optional (!withGui) "d")) + "-unlimited-" + version;
-  version = "1.6.0.1";
+  version = "1.9.1.1";
 
   src = fetchFromGitHub {
     owner = "bitcoinunlimited";
     repo = "bitcoinunlimited";
-    rev = "bucash${version}";
-    sha256 = "0f0mnal4jf8xdj7w5m4rdlcqkrkbpxi88c006m5k45lmjmj141zr";
+    rev = "BCHunlimited${version}";
+    sha256 = "sha256-K15SI1F/xI4SkX4a41QHLn89YaHCgrlv+wcbkpwGKhI=";
   };
 
-  nativeBuildInputs = [ pkgconfig autoreconfHook python3 ]
+  nativeBuildInputs = [ pkg-config autoreconfHook python3 ]
     ++ optionals withGui [ wrapQtAppsHook qttools ];
   buildInputs = [ openssl db48 boost zlib
-                  miniupnpc utillinux protobuf libevent ]
+                  miniupnpc util-linux protobuf libevent ]
                   ++ optionals withGui [ qtbase qttools qrencode ]
                   ++ optionals stdenv.isDarwin [ Foundation ApplicationServices AppKit ];
 
@@ -57,7 +57,7 @@ stdenv.mkDerivation rec {
       support Bitcoin conflict resolution as originally envisioned by its founder -
       consider running a Bitcoin Unlimited client.
     '';
-    homepage = https://www.bitcoinunlimited.info/;
+    homepage = "https://www.bitcoinunlimited.info/";
     maintainers = with maintainers; [ DmitryTsygankov ];
     license = licenses.mit;
     broken = stdenv.isDarwin;

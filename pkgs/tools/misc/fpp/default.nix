@@ -1,18 +1,18 @@
-{ stdenv, fetchFromGitHub, python3 }:
+{ lib, stdenv, fetchFromGitHub, python3 }:
 
 stdenv.mkDerivation rec {
   pname = "fpp";
-  version = "0.8.2";
+  version = "0.9.2";
 
   src = fetchFromGitHub {
     owner = "facebook";
     repo = "PathPicker";
     rev = version;
-    sha256 = "00916xx4scd4xr9zxqkyhilczi27f2qm5y042592wr79ddix4n9v";
+    sha256 = "08p2xlz045fqyb0aj9pwwf2s5nb4b02i8zj81732q59yx5c6lrlv";
   };
 
   postPatch = ''
-    substituteInPlace fpp --replace 'PYTHONCMD="python"' 'PYTHONCMD="${python3.interpreter}"'
+    substituteInPlace fpp --replace 'PYTHONCMD="python3"' 'PYTHONCMD="${python3.interpreter}"'
   '';
 
   installPhase = ''
@@ -23,8 +23,8 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "CLI program that accepts piped input and presents files for selection";
-    homepage = https://facebook.github.io/PathPicker/;
-    license = stdenv.lib.licenses.bsd3;
-    platforms = stdenv.lib.platforms.all;
+    homepage = "https://facebook.github.io/PathPicker/";
+    license = lib.licenses.bsd3;
+    platforms = lib.platforms.all;
   };
 }

@@ -1,30 +1,33 @@
-{ stdenv, fetchFromGitHub, rustPlatform, Security, openssl, pkgconfig, libiconv, curl }:
+{ lib, stdenv, fetchFromGitHub, rustPlatform, Security, openssl, pkg-config, libiconv, curl }:
 
 rustPlatform.buildRustPackage rec {
   pname = "cargo-generate";
-  version = "0.3.0";
+  version = "0.5.3";
 
   src = fetchFromGitHub {
     owner = "ashleygwilliams";
     repo = "cargo-generate";
     rev = "v${version}";
-    sha256 = "0n6na6xq4bvs9hc7vc86qqmlrkv824qdmja27b21l2wz3l77r4jb";
+    sha256 = "sha256-RrDwq5VufMDsPlqRmBP3x2RUWU740L0L18noByO1IDY=";
   };
 
-  cargoSha256 = "00fgzh1s63rr1vs3ahra604m81fc4imx3s09brw2y0n46syhwypi";
+  cargoSha256 = "sha256-/0pxEQFhovPRI4Knv5xq6+PHRuGN6+tF8CdK5X30LKI=";
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [ openssl  ]
-    ++ stdenv.lib.optionals stdenv.isDarwin [ Security libiconv curl ];
+    ++ lib.optionals stdenv.isDarwin [ Security libiconv curl ];
 
-  doCheck = false;
+  preCheck = ''
+    export HOME=$(mktemp -d) USER=nixbld
+    git config --global user.name Nixbld
+    git config --global user.email nixbld@localhost.localnet
+  '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "cargo, make me a project";
-    homepage = https://github.com/ashleygwilliams/cargo-generate;
+    homepage = "https://github.com/ashleygwilliams/cargo-generate";
     license = licenses.asl20;
     maintainers = [ maintainers.turbomack ];
-    platforms = platforms.all;
   };
 }

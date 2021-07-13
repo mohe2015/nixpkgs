@@ -1,16 +1,25 @@
-{ stdenv, buildPythonPackage, fetchPypi
+{ lib
+, buildPythonPackage
+, fetchPypi
 , requests
-, testfixtures, mock, requests_toolbelt
-, betamax, betamax-serializers, betamax-matchers
+, testfixtures
+, mock
+, requests_toolbelt
+, betamax
+, betamax-serializers
+, betamax-matchers
+, pytestCheckHook
+, pythonOlder
 }:
 
 buildPythonPackage rec {
   pname = "prawcore";
-  version = "1.0.1";
+  version = "2.2.0";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "ab5558efb438aa73fc66c4178bfc809194dea3ce2addf4dec873de7e2fd2824e";
+    sha256 = "bde42fad459c4dcfe0f22a18921ef4981ee7cd286ea1de3eb697ba91838c9123";
   };
 
   propagatedBuildInputs = [
@@ -24,13 +33,16 @@ buildPythonPackage rec {
     betamax-serializers
     betamax-matchers
     requests_toolbelt
+    pytestCheckHook
   ];
 
-  meta = with stdenv.lib; {
+  pythonImportsCheck = [ "prawcore" ];
+
+  meta = with lib; {
     description = "Low-level communication layer for PRAW";
-    homepage = https://praw.readthedocs.org/;
-    license = licenses.gpl3;
+    homepage = "https://praw.readthedocs.org/";
+    license = licenses.bsd2;
     platforms = platforms.all;
-    maintainers = with maintainers; [ ];
+    maintainers = with maintainers; [ fab ];
   };
 }

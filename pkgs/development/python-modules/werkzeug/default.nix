@@ -1,26 +1,57 @@
-{ stdenv, buildPythonPackage, fetchPypi
-, itsdangerous, hypothesis
-, pytest, requests }:
+{ lib
+, stdenv
+, buildPythonPackage
+, pythonOlder
+, fetchPypi
+, watchdog
+, dataclasses
+, pytest-timeout
+, pytest-xprocess
+, pytestCheckHook
+ }:
 
 buildPythonPackage rec {
   pname = "Werkzeug";
-  version = "0.15.5";
+  version = "2.0.1";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "a13b74dd3c45f758d4ebdb224be8f1ab8ef58b3c0ffc1783a8c7d9f4f50227e6";
+    sha256 = "0hlwawnn8c41f254qify5jnjj8xb97n294h09bqimzqhs0qdpq8x";
   };
 
-  propagatedBuildInputs = [ itsdangerous ];
-  checkInputs = [ pytest requests hypothesis ];
+  propagatedBuildInputs = lib.optionals (!stdenv.isDarwin) [
+    # watchdog requires macos-sdk 10.13+
+    watchdog
+  ] ++ lib.optionals (pythonOlder "3.7") [
+    dataclasses
+  ];
 
-  checkPhase = ''
-    pytest ${stdenv.lib.optionalString stdenv.isDarwin "-k 'not test_get_machine_id'"}
-  '';
+  checkInputs = [
+    pytest-timeout
+    pytest-xprocess
+    pytestCheckHook
+  ];
 
-  meta = with stdenv.lib; {
+  disabledTests = lib.optionals stdenv.isDarwin [
+    "test_get_machine_id"
+  ];
+
+  pytestFlagsArray = [
+    # don't run tests that are marked with filterwarnings, they fail with
+    # warnings._OptionError: unknown warning category: 'pytest.PytestUnraisableExceptionWarning'
+    "-m 'not filterwarnings'"
+  ];
+
+  meta = with lib; {
     homepage = "https://palletsprojects.com/p/werkzeug/";
-    description = "A WSGI utility library for Python";
+    description = "The comprehensive WSGI web application library";
+    longDescription = ''
+      Werkzeug is a comprehensive WSGI web application library. It
+      began as a simple collection of various utilities for WSGI
+      applications and has become one of the most advanced WSGI
+      utility libraries.
+    '';
     license = licenses.bsd3;
   };
 }

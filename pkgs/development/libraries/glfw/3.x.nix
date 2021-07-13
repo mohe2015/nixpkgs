@@ -1,38 +1,38 @@
-{ stdenv, lib, fetchFromGitHub, cmake, libGL, libXrandr, libXinerama, libXcursor, libX11
+{ stdenv, lib, fetchFromGitHub, cmake
+, libGL, libXrandr, libXinerama, libXcursor, libX11, libXi, libXext
 , Cocoa, Kernel, fixDarwinDylibNames
 }:
 
 stdenv.mkDerivation rec {
-  version = "3.2.1";
+  version = "3.3.4";
   pname = "glfw";
 
   src = fetchFromGitHub {
     owner = "glfw";
     repo = "GLFW";
     rev = version;
-    sha256 = "0gq6ad38b3azk0w2yy298yz2vmg2jmf9g0ydidqbmiswpk25ills";
+    sha256 = "sha256-BP4wxjgm0x0E68tNz5eudkVUyBnXkQlP7LY3ppZunhw=";
   };
-
-  enableParallelBuilding = true;
 
   propagatedBuildInputs = [ libGL ];
 
-  nativeBuildInputs = [ cmake ];
+  nativeBuildInputs = [ cmake ]
+    ++ lib.optional stdenv.isDarwin fixDarwinDylibNames;
 
-  buildInputs = [ libX11 libXrandr libXinerama libXcursor ]
-    ++ lib.optionals stdenv.isDarwin [ Cocoa Kernel fixDarwinDylibNames ];
+  buildInputs = [ libX11 libXrandr libXinerama libXcursor libXi libXext ]
+    ++ lib.optionals stdenv.isDarwin [ Cocoa Kernel ];
 
-  cmakeFlags = [ "-DBUILD_SHARED_LIBS=ON" ];
+  cmakeFlags = [
+    "-DBUILD_SHARED_LIBS=ON"
+  ] ++ lib.optional (!stdenv.isDarwin) [
+    "-DCMAKE_C_FLAGS=-D_GLFW_GLX_LIBRARY='\"${lib.getLib libGL}/lib/libGL.so.1\"'"
+  ];
 
-  preConfigure  = lib.optional (!stdenv.isDarwin) ''
-    substituteInPlace src/glx_context.c --replace "libGL.so.1" "${lib.getLib libGL}/lib/libGL.so.1"
-  '';
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Multi-platform library for creating OpenGL contexts and managing input, including keyboard, mouse, joystick and time";
-    homepage = https://www.glfw.org/;
+    homepage = "https://www.glfw.org/";
     license = licenses.zlib;
-    maintainers = with maintainers; [ marcweber ];
+    maintainers = with maintainers; [ marcweber twey ];
     platforms = platforms.unix;
   };
 }

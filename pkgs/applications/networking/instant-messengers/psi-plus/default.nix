@@ -1,48 +1,52 @@
-{ stdenv, fetchFromGitHub, cmake
-, qt5, libidn, qca2-qt5, libXScrnSaver, hunspell
-, libgcrypt, libotr, html-tidy, libgpgerror, libsignal-protocol-c
+{ lib, mkDerivation, fetchFromGitHub, cmake
+, qtbase, qtmultimedia, qtx11extras, qttools, qtwebengine
+, libidn, qca-qt5, libXScrnSaver, hunspell
+, libsecret, libgcrypt, libotr, html-tidy, libgpgerror, libsignal-protocol-c
+, usrsctp
+
+# Voice messages
+, voiceMessagesSupport ? true
+, gst_all_1
 }:
 
-stdenv.mkDerivation rec {
+mkDerivation rec {
   pname = "psi-plus";
-  version = "1.4.504";
+  version = "1.5.1549";
 
   src = fetchFromGitHub {
     owner = "psi-plus";
     repo = "psi-plus-snapshots";
     rev = version;
-    sha256 = "1nv1ynad2gcn7r8mm2w3kixmahaql7xax1lccsqyxqmj1r0klk8q";
+    sha256 = "0jpv6qzfg6xjwkrnci7fav27nxm174i9l5g4vmsbchqpwfk90z2m";
   };
-
-  resources = fetchFromGitHub {
-    owner = "psi-plus";
-    repo = "resources";
-    rev = "d623f57db35eb5af81ccdf69b2cbe1c437190f29";
-    sha256 = "024cyazyxka5vcbjrkkw32c5zw6aa70n50fdp6zh5v5c51d9ci8k";
-  };
-
-  postUnpack = ''
-    cp -a "${resources}/iconsets" "$sourceRoot"
-  '';
 
   cmakeFlags = [
     "-DENABLE_PLUGINS=ON"
   ];
 
-  nativeBuildInputs = [ cmake ];
+  nativeBuildInputs = [ cmake qttools ];
 
   buildInputs = [
-    qt5.qtbase qt5.qtmultimedia qt5.qtx11extras qt5.qttools qt5.qtwebkit
-    libidn qca2-qt5 libXScrnSaver hunspell
-    libgcrypt libotr html-tidy libgpgerror libsignal-protocol-c
+    qtbase qtmultimedia qtx11extras qtwebengine
+    libidn qca-qt5 libXScrnSaver hunspell
+    libsecret libgcrypt libotr html-tidy libgpgerror libsignal-protocol-c
+    usrsctp
+  ] ++ lib.optionals voiceMessagesSupport [
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
   ];
 
-  enableParallelBuilding = true;
+  preFixup = lib.optionalString voiceMessagesSupport ''
+    qtWrapperArgs+=(
+      --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0"
+    )
+  '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
+    homepage = "https://psi-plus.com";
     description = "XMPP (Jabber) client";
-    maintainers = with maintainers; [ orivej ];
-    license = licenses.gpl2;
+    maintainers = with maintainers; [ orivej misuzu unclechu ];
+    license = licenses.gpl2Only;
     platforms = platforms.linux;
   };
 }

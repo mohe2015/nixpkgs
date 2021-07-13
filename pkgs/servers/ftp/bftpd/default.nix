@@ -1,15 +1,15 @@
-{ stdenv, fetchurl }:
+{ lib, stdenv, fetchurl }:
 
 let
   pname = "bftpd";
 
 in stdenv.mkDerivation rec {
   name = "${pname}-${version}";
-  version = "5.2";
+  version = "5.7";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/${pname}/${pname}/${name}/${name}.tar.gz";
-    sha256 = "0kmavljj3zwpgdib9nb14fnriiv0l9zm3hglimcyz26sxbw5jqky";
+    sha256 = "sha256-pUPOYqgJKntQZRRodcyYeFNLCdxKhT8sK1bi3jl6b0s=";
   };
 
   preConfigure = ''
@@ -24,13 +24,13 @@ in stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     inherit version;
     description = "A minimal ftp server";
     downloadPage = "http://bftpd.sf.net/download.html";
-    homepage = http://bftpd.sf.net/;
+    homepage = "http://bftpd.sf.net/";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [ raskin ];
-    platforms = platforms.linux;
+    platforms = platforms.all;
   };
 }

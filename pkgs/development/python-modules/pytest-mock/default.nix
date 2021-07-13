@@ -1,50 +1,33 @@
 { lib
 , buildPythonPackage
 , fetchPypi
-, fetchpatch
-, isPy3k
-, pytest
-, mock
-, setuptools_scm
+, pytest-asyncio
+, pytestCheckHook
+, setuptools-scm
 }:
 
 buildPythonPackage rec {
   pname = "pytest-mock";
-  version = "1.10.4";
+  version = "3.6.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "5bf5771b1db93beac965a7347dc81c675ec4090cb841e49d9d34637a25c30568";
+    sha256 = "40217a058c52a63f1042f0784f62009e976ba824c418cced42e88d5f40ab0e62";
   };
 
-  propagatedBuildInputs = lib.optional (!isPy3k) mock;
-
-  nativeBuildInputs = [
-   setuptools_scm
-  ];
+  nativeBuildInputs = [ setuptools-scm ];
 
   checkInputs = [
-    pytest
+    pytest-asyncio
+    pytestCheckHook
   ];
 
-  patches = [
-    # Fix tests for pytest 4.6. Remove with the next release
-    (fetchpatch {
-      url = "https://github.com/pytest-dev/pytest-mock/commit/189cc599d3bfbe91a17c93211c04237b6c5849b1.patch";
-      sha256 = "13nk75ldab3j8nfzyd9w4cgfk2fxq4if1aqkqy82ar7y7qh07a7m";
-    })
-  ];
-
-  checkPhase = ''
-    # remove disabled test on next release
-    # https://github.com/pytest-dev/pytest-mock/pull/151
-    pytest -k "not test_detailed_introspection"
-  '';
+  pythonImportsCheck = [ "pytest_mock" ];
 
   meta = with lib; {
-    description = "Thin-wrapper around the mock package for easier use with py.test.";
-    homepage    = https://github.com/pytest-dev/pytest-mock;
-    license     = licenses.mit;
-    maintainers = with maintainers; [ nand0p ];
+    description = "Thin-wrapper around the mock package for easier use with pytest";
+    homepage = "https://github.com/pytest-dev/pytest-mock";
+    license = with licenses; [ mit ];
+    maintainers = with maintainers; [ ];
   };
 }

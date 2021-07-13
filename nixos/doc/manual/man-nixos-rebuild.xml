@@ -7,10 +7,12 @@
   <refmiscinfo class="source">NixOS</refmiscinfo>
 <!-- <refmiscinfo class="version"><xi:include href="version.txt" parse="text"/></refmiscinfo> -->
  </refmeta>
+
  <refnamediv>
-  <refname><command>nixos-rebuild</command>
-  </refname><refpurpose>reconfigure a NixOS machine</refpurpose>
+  <refname><command>nixos-rebuild</command></refname>
+  <refpurpose>reconfigure a NixOS machine</refpurpose>
  </refnamediv>
+
  <refsynopsisdiv>
   <cmdsynopsis>
    <command>nixos-rebuild</command><group choice='req'>
@@ -50,10 +52,18 @@
     <option>build-vm-with-bootloader</option>
    </arg>
     </group>
-   <sbr />
-   <arg>
-    <option>--upgrade</option>
-   </arg>
+    <sbr />
+
+    <arg>
+      <group choice='req'>
+        <arg choice='plain'>
+          <option>--upgrade</option>
+        </arg>
+        <arg choice='plain'>
+          <option>--upgrade-all</option>
+        </arg>
+      </group>
+    </arg>
 
    <arg>
     <option>--install-bootloader</option>
@@ -74,7 +84,19 @@
    <arg>
     <option>--builders</option> <replaceable>builder-spec</replaceable>
    </arg>
+
+   <sbr/>
+
+   <arg>
+    <option>--flake</option> <replaceable>flake-uri</replaceable>
+   </arg>
+
+   <arg>
+    <option>--override-input</option> <replaceable>input-name</replaceable> <replaceable>flake-uri</replaceable>
+   </arg>
+
    <sbr />
+
    <arg>
     <group choice='req'>
     <arg choice='plain'>
@@ -86,7 +108,23 @@
     </arg>
      </group> <replaceable>name</replaceable>
    </arg>
+
    <sbr />
+
+   <arg>
+    <option>--build-host</option> <replaceable>host</replaceable>
+   </arg>
+
+   <arg>
+    <option>--target-host</option> <replaceable>host</replaceable>
+   </arg>
+
+   <arg>
+    <option>--use-remote-sudo</option>
+   </arg>
+
+   <sbr />
+
    <arg>
     <option>--show-trace</option>
    </arg>
@@ -98,6 +136,11 @@
     <group choice='req'>
      <arg choice='plain'><option>--verbose</option></arg>
      <arg choice='plain'><option>-v</option></arg>
+    </group>
+   </arg>
+   <arg>
+    <group choice='req'>
+     <arg choice='plain'><option>--impure</option></arg>
     </group>
    </arg>
    <arg>
@@ -121,21 +164,28 @@
    </arg>
   </cmdsynopsis>
  </refsynopsisdiv>
+
  <refsection>
   <title>Description</title>
+
   <para>
-   This command updates the system so that it corresponds to the configuration
-   specified in <filename>/etc/nixos/configuration.nix</filename>. Thus, every
-   time you modify <filename>/etc/nixos/configuration.nix</filename> or any
-   NixOS module, you must run <command>nixos-rebuild</command> to make the
-   changes take effect. It builds the new system in
-   <filename>/nix/store</filename>, runs its activation script, and stop and
-   (re)starts any system services if needed. Please note that user services need
-   to be started manually as they aren't detected by the activation script at the moment.
+   This command updates the system so that it corresponds to the
+   configuration specified in
+   <filename>/etc/nixos/configuration.nix</filename> or
+   <filename>/etc/nixos/flake.nix</filename>. Thus, every time you
+   modify the configuration or any other NixOS module, you must run
+   <command>nixos-rebuild</command> to make the changes take
+   effect. It builds the new system in
+   <filename>/nix/store</filename>, runs its activation script, and
+   stop and (re)starts any system services if needed. Please note that
+   user services need to be started manually as they aren't detected
+   by the activation script at the moment.
   </para>
+
   <para>
    This command has one required argument, which specifies the desired
    operation. It must be one of the following:
+
    <variablelist>
     <varlistentry>
      <term>
@@ -152,6 +202,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>boot</option>
@@ -165,6 +216,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>test</option>
@@ -179,6 +231,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>build</option>
@@ -197,6 +250,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>dry-build</option>
@@ -208,6 +262,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>dry-activate</option>
@@ -222,6 +277,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>edit</option>
@@ -232,6 +288,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>build-vm</option>
@@ -249,12 +306,14 @@
 <prompt>$ </prompt>./result/bin/run-*-vm
 </screen>
       </para>
+
       <para>
        The VM is implemented using the <literal>qemu</literal> package. For
        best performance, you should load the <literal>kvm-intel</literal> or
        <literal>kvm-amd</literal> kernel modules to get hardware
        virtualisation.
       </para>
+
       <para>
        The VM mounts the Nix store of the host through the 9P file system. The
        host Nix store is read-only, so Nix commands that modify the Nix store
@@ -262,6 +321,7 @@
        <command>nixos-rebuild</command>; to change the VM’s configuration,
        you must halt the VM and re-run the commands above.
       </para>
+
       <para>
        The VM has its own <literal>ext3</literal> root file system, which is
        automatically created when the VM is first started, and is persistent
@@ -272,6 +332,7 @@
       </para>
      </listitem>
     </varlistentry>
+
     <varlistentry>
      <term>
       <option>build-vm-with-bootloader</option>
@@ -287,29 +348,46 @@
        switch</command>), because the hardware and boot loader configuration in
        the VM are different. The boot loader is installed on an automatically
        generated virtual disk containing a <filename>/boot</filename>
-       partition, which is mounted read-only in the VM.
+       partition.
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsection>
+
  <refsection>
   <title>Options</title>
   <para>
    This command accepts the following options:
   </para>
+
   <variablelist>
    <varlistentry>
     <term>
      <option>--upgrade</option>
     </term>
+    <term>
+     <option>--upgrade-all</option>
+    </term>
     <listitem>
-     <para>
-      Fetch the latest version of NixOS from the NixOS channel.
+      <para>
+        Update the root user's channel named <literal>nixos</literal>
+        before rebuilding the system.
+      </para>
+      <para>
+        In addition to the <literal>nixos</literal> channel, the root
+        user's channels which have a file named
+        <literal>.update-on-nixos-rebuild</literal> in their base
+        directory will also be updated.
+      </para>
+      <para>
+        Passing <option>--upgrade-all</option> updates all of the root
+        user's channels.
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--install-bootloader</option>
@@ -321,6 +399,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--no-build-nix</option>
@@ -336,19 +415,20 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--fast</option>
     </term>
     <listitem>
      <para>
-      Equivalent to <option>--no-build-nix</option>
-      <option>--show-trace</option>. This option is useful if you call
-      <command>nixos-rebuild</command> frequently (e.g. if you’re hacking on
-      a NixOS module).
+      Equivalent to <option>--no-build-nix</option>. This option is
+      useful if you call <command>nixos-rebuild</command> frequently
+      (e.g. if you’re hacking on a NixOS module).
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--rollback</option>
@@ -363,6 +443,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--builders</option> <replaceable>builder-spec</replaceable>
@@ -382,6 +463,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--profile-name</option>
@@ -412,6 +494,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--build-host</option>
@@ -437,6 +520,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <option>--target-host</option>
@@ -449,6 +533,7 @@
       be accessible over ssh, and for the commands <option>switch</option>,
       <option>boot</option> and <option>test</option> you need root access.
      </para>
+
      <para>
       If <option>--build-host</option> is not explicitly specified,
       <option>--build-host</option> will implicitly be set to the same value as
@@ -457,6 +542,7 @@
       place remotely (and no build artifacts will be copied to the local
       machine).
      </para>
+
      <para>
       You can include a remote user name in the host name
       (<replaceable>user@host</replaceable>). You can also set ssh options by
@@ -464,17 +550,52 @@
      </para>
     </listitem>
    </varlistentry>
+
+   <varlistentry>
+    <term>
+     <option>--use-remote-sudo</option>
+    </term>
+    <listitem>
+     <para>
+      When set, nixos-rebuild prefixes remote commands that run on
+      the <option>--build-host</option> and <option>--target-host</option>
+      systems with <command>sudo</command>. Setting this option allows
+      deploying as a non-root user.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>
+     <option>--flake</option> <replaceable>flake-uri</replaceable><optional>#<replaceable>name</replaceable></optional>
+    </term>
+    <listitem>
+     <para>
+      Build the NixOS system from the specified flake. It defaults to
+      the directory containing the target of the symlink
+      <filename>/etc/nixos/flake.nix</filename>, if it exists. The
+      flake must contain an output named
+      <literal>nixosConfigurations.<replaceable>name</replaceable></literal>. If
+      <replaceable>name</replaceable> is omitted, it default to the
+      current host name.
+     </para>
+    </listitem>
+   </varlistentry>
+
   </variablelist>
+
   <para>
    In addition, <command>nixos-rebuild</command> accepts various Nix-related
    flags, including <option>--max-jobs</option> / <option>-j</option>,
    <option>--show-trace</option>, <option>--keep-failed</option>,
-   <option>--keep-going</option> and <option>--verbose</option> /
+   <option>--keep-going</option>, <option>--impure</option>, and <option>--verbose</option> /
    <option>-v</option>. See the Nix manual for details.
   </para>
  </refsection>
+
  <refsection>
   <title>Environment</title>
+
   <variablelist>
    <varlistentry>
     <term>
@@ -487,6 +608,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <envar>NIX_SSHOPTS</envar>
@@ -500,9 +622,27 @@
    </varlistentry>
   </variablelist>
  </refsection>
+
  <refsection>
   <title>Files</title>
+
   <variablelist>
+
+   <varlistentry>
+    <term>
+     <filename>/etc/nixos/flake.nix</filename>
+    </term>
+    <listitem>
+     <para>
+      If this file exists, then <command>nixos-rebuild</command> will
+      use it as if the <option>--flake</option> option was given. This
+      file may be a symlink to a <filename>flake.nix</filename> in an
+      actual flake; thus <filename>/etc/nixos</filename> need not be a
+      flake.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry>
     <term>
      <filename>/run/current-system</filename>
@@ -513,6 +653,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry>
     <term>
      <filename>/nix/var/nix/profiles/system</filename>
@@ -524,8 +665,10 @@
      </para>
     </listitem>
    </varlistentry>
+
   </variablelist>
  </refsection>
+
  <refsection>
   <title>Bugs</title>
   <para>

@@ -4,35 +4,38 @@
 , msrest
 , msrestazure
 , azure-common
+, azure-mgmt-core
 , azure-mgmt-nspkg
 , isPy3k
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-subscription";
-  version = "0.3.0";
+  version = "1.0.0";
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "7a095fe46e598210b178e1059bba82eb02f3b8a7f44f3791442ff7d9ff323d2b";
+    sha256 = "22f606f298419f466a8149811fc762686c93da00a7dc15d3b7cdbf22b96cf5db";
   };
 
   propagatedBuildInputs = [
+    azure-common
+    azure-mgmt-core
     msrest
     msrestazure
-    azure-common
   ] ++ lib.optionals (!isPy3k) [
     azure-mgmt-nspkg
   ];
 
   # has no tests
   doCheck = false;
+  pythonImportsCheck = [ "azure.mgmt.subscription" ];
 
   meta = with lib; {
     description = "This is the Microsoft Azure Subscription Management Client Library";
-    homepage = https://github.com/Azure/azure-sdk-for-python/tree/master/azure-mgmt-subscription;
+    homepage = "https://github.com/Azure/azure-sdk-for-python";
     license = licenses.mit;
-    maintainers = with maintainers; [ mwilsoninsight ];
+    maintainers = with maintainers; [ maxwilson ];
   };
 }

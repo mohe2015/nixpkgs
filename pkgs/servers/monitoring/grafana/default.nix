@@ -1,10 +1,8 @@
-{ lib, buildGoPackage, fetchurl, fetchFromGitHub, phantomjs2 }:
+{ lib, buildGoModule, fetchurl, fetchFromGitHub, nixosTests }:
 
-buildGoPackage rec {
+buildGoModule rec {
   pname = "grafana";
-  version = "6.3.5";
-
-  goPackagePath = "github.com/grafana/grafana";
+  version = "8.0.5";
 
   excludedPackages = [ "release_publisher" ];
 
@@ -12,33 +10,56 @@ buildGoPackage rec {
     rev = "v${version}";
     owner = "grafana";
     repo = "grafana";
-    sha256 = "0qimqdlxkvh31n730gp1wl1va0bza69bw90nyzrmfb34733pmni2";
+    sha256 = "sha256-tehqb86Mkg1dD4x34zHwLD9uV/PssslLDIs9bl28ap0=";
   };
 
   srcStatic = fetchurl {
     url = "https://dl.grafana.com/oss/release/grafana-${version}.linux-amd64.tar.gz";
-    sha256 = "1rw2ws610ba2vl5kv3yay8s69xkqzisrl6q27zxa5kj48khvy101";
+    sha256 = "sha256-aVZpTQ4ERrJV3YN4U0v/tJoYkTg7vlQVe6sIIK2NE0k=";
   };
 
-  postPatch = ''
-    substituteInPlace pkg/cmd/grafana-server/main.go \
-      --replace 'var version = "5.0.0"'  'var version = "${version}"'
+  vendorSha256 = "sha256-INvFZ9hNbtpaDXuhBPaSaqBZyi7QJ18tMk+AZjJtYjg=";
+
+  preBuild = ''
+    # The testcase makes an API call against grafana.com:
+    #
+    # --- Expected
+    # +++ Actual
+    # @@ -1,4 +1,4 @@
+    #  (map[string]interface {}) (len=2) {
+    # - (string) (len=5) "error": (string) (len=16) "plugin not found",
+    # - (string) (len=7) "message": (string) (len=16) "Plugin not found"
+    # + (string) (len=5) "error": (string) (len=171) "Failed to send request: Get \"https://grafana.com/api/plugins/repo/test\": dial tcp: lookup grafana.com on [::1]:53: read udp [::1]:48019->[::1]:53: read: connection refused",
+    # + (string) (len=7) "message": (string) (len=24) "Failed to install plugin"
+    #  }
+    sed -i -e '/func TestPluginInstallAccess/a t.Skip();' pkg/tests/api/plugins/api_install_test.go
+
+    # Skip a flaky test (https://github.com/NixOS/nixpkgs/pull/126928#issuecomment-861424128)
+    sed -i -e '/it should change folder successfully and return correct result/{N;s/$/\nt.Skip();/}'\
+      pkg/services/libraryelements/libraryelements_patch_test.go
+
+
+    # main module (github.com/grafana/grafana) does not contain package github.com/grafana/grafana/scripts/go
+    rm -r scripts/go
   '';
 
-  preBuild = "export GOPATH=$GOPATH:$NIX_BUILD_TOP/go/src/${goPackagePath}/Godeps/_workspace";
+  buildFlagsArray = ''
+    -ldflags=-s -w -X main.version=${version}
+  '';
 
   postInstall = ''
     tar -xvf $srcStatic
-    mkdir -p $bin/share/grafana
-    mv grafana-*/{public,conf,tools} $bin/share/grafana/
-    ln -sf ${phantomjs2}/bin/phantomjs $bin/share/grafana/tools/phantomjs/phantomjs
+    mkdir -p $out/share/grafana
+    mv grafana-*/{public,conf,tools} $out/share/grafana/
   '';
+
+  passthru.tests = { inherit (nixosTests) grafana; };
 
   meta = with lib; {
     description = "Gorgeous metric viz, dashboards & editors for Graphite, InfluxDB & OpenTSDB";
-    license = licenses.asl20;
+    license = licenses.agpl3;
     homepage = "https://grafana.com";
-    maintainers = with maintainers; [ offline fpletz willibutz globin ];
+    maintainers = with maintainers; [ offline fpletz willibutz globin ma27 Frostman ];
     platforms = platforms.linux;
   };
 }

@@ -40,7 +40,7 @@ in
       configFile = mkOption {
         type = types.nullOr types.path;
         default = null;
-        example = literalExample "$${pkgs.my-configs}/lesskey";
+        example = literalExample "\${pkgs.my-configs}/lesskey";
         description = ''
           Path to lesskey configuration file.
 
@@ -54,8 +54,8 @@ in
         type = types.attrsOf types.str;
         default = {};
         example = {
-          h = "noaction 5\e(";
-          l = "noaction 5\e)";
+          h = "noaction 5\\e(";
+          l = "noaction 5\\e)";
         };
         description = "Defines new command keys.";
       };

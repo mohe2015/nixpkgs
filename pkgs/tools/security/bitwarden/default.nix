@@ -2,6 +2,7 @@
 , autoPatchelfHook
 , dpkg
 , fetchurl
+, lib
 , libsecret
 , makeDesktopItem
 , makeWrapper
@@ -16,14 +17,14 @@ let
   pname = "bitwarden";
 
   version = {
-    x86_64-linux = "1.15.2";
+    x86_64-linux = "1.27.1";
   }.${system} or "";
 
   sha256 = {
-    x86_64-linux = "0yz4hkqqwq2zrdjfxk5kybhs90n80k6bkn0625m47b09lwl2di4f";
+    x86_64-linux = "sha256-CqyIARPHri018AOgI1rFJ9Td3K8OamXVgupAINME7BY=";
   }.${system} or "";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A secure and free password manager for all of your devices";
     homepage = "https://bitwarden.com";
     license = licenses.gpl3;
@@ -72,12 +73,12 @@ let
     '';
 
     runtimeDependencies = [
-      udev.lib
+      (lib.getLib udev)
     ];
 
     postFixup = ''
       makeWrapper $out/opt/Bitwarden/bitwarden $out/bin/bitwarden \
-        --prefix LD_LIBRARY_PATH : "${stdenv.lib.makeLibraryPath [ libsecret stdenv.cc.cc ] }" \
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret stdenv.cc.cc ] }" \
         "''${gappsWrapperArgs[@]}"
     '';
   };

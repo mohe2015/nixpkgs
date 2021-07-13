@@ -1,22 +1,23 @@
-{ stdenv, buildPythonPackage, fetchPypi, pytest, case, vine, pytest-sugar }:
+{ lib, buildPythonPackage, fetchPypi, pytestCheckHook, case, vine }:
 
 buildPythonPackage rec {
   pname = "amqp";
-  version = "2.5.0";
+  version = "5.0.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1j1046gcriidsfha0hvrw6hwcm0wrhbvg0prjjji5inaadyzidnb";
+    sha256 = "03e16e94f2b34c31f8bf1206d8ddd3ccaa4c315f7f6a1879b7b1210d229568c2";
   };
 
-  checkInputs = [ pytest case pytest-sugar ];
   propagatedBuildInputs = [ vine ];
 
-  # Disable because pytest-sugar requires an old version of pytest
-  doCheck = false;
+  checkInputs = [ pytestCheckHook case ];
+  disabledTests = [
+    "test_rmq.py" # requires network access
+  ];
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/celery/py-amqp;
+  meta = with lib; {
+    homepage = "https://github.com/celery/py-amqp";
     description = "Python client for the Advanced Message Queuing Procotol (AMQP). This is a fork of amqplib which is maintained by the Celery project";
     license = licenses.lgpl21;
   };

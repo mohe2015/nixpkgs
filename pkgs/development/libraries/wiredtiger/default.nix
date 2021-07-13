@@ -1,11 +1,11 @@
-{ stdenv, fetchFromGitHub, automake, autoconf, libtool
+{ lib, stdenv, fetchFromGitHub, automake, autoconf, libtool
 
 # Optional Dependencies
 , lz4 ? null, snappy ? null, zlib ? null, bzip2 ? null, db ? null
 , gperftools ? null, leveldb ? null
 }:
 
-with stdenv.lib;
+with lib;
 let
   mkFlag = trueStr: falseStr: cond: name: val: "--"
     + (if cond then trueStr else falseStr)
@@ -14,7 +14,7 @@ let
   mkEnable = mkFlag "enable-" "disable-";
   mkWith = mkFlag "with-" "without-";
 
-  shouldUsePkg = pkg: if pkg != null && stdenv.lib.any (stdenv.lib.meta.platformMatch stdenv.hostPlatform) pkg.meta.platforms then pkg else null;
+  shouldUsePkg = pkg: if pkg != null && lib.meta.availableOn stdenv.hostPlatform pkg then pkg else null;
 
   optLz4 = shouldUsePkg lz4;
   optSnappy = shouldUsePkg snappy;
@@ -26,13 +26,13 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "wiredtiger";
-  version = "3.2.0";
+  version = "3.2.1";
 
   src = fetchFromGitHub {
     repo = "wiredtiger";
     owner = "wiredtiger";
     rev = version;
-    sha256 = "1s27l51p2p3kbdjmccvlg43i7zx84hhchs3779w9giab4nvd0y19";
+    sha256 = "04j2zw8b9jym43r682rh4kpdippxx7iw3ry16nxlbybzar9kgk83";
   };
 
   nativeBuildInputs = [ automake autoconf libtool ];
@@ -59,7 +59,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = http://wiredtiger.com/;
+    homepage = "http://wiredtiger.com/";
     description = "";
     license = licenses.gpl2;
     platforms = intersectLists platforms.unix platforms.x86_64;

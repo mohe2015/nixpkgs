@@ -3,8 +3,8 @@
 , lib
 , fetchFromGitHub
 , cmake
-, pkgconfig
-, alsaLib
+, pkg-config
+, alsa-lib
 , boost
 , chromaprint
 , fftw
@@ -22,30 +22,30 @@
 , libpulseaudio ? null
 , libselinux ? null
 , libsepol ? null
-, p11_kit ? null
-, utillinux ? null
+, p11-kit ? null
+, util-linux ? null
 , qtbase
 , qtx11extras
 , qttools
 , withGstreamer ? true
 , gst_all_1 ? null
 , withVlc ? true
-, vlc ? null
+, libvlc ? null
 }:
 
 mkDerivation rec {
   pname = "strawberry";
-  version = "0.6.3";
+  version = "0.9.2";
 
   src = fetchFromGitHub {
     owner = "jonaski";
     repo = pname;
     rev = version;
-    sha256 = "01j5jzzicy895kg9sjy46lbcm5kvf3642d3q5wwb2fyvyq1fbcv0";
+    sha256 = "sha256:0d9asg21j9ai23sb35cimws8bd8fsnpha777rgscraa7i09q0rx2";
   };
 
   buildInputs = [
-    alsaLib
+    alsa-lib
     boost
     chromaprint
     fftw
@@ -66,8 +66,7 @@ mkDerivation rec {
     libpulseaudio
     libselinux
     libsepol
-    p11_kit
-    utillinux
+    p11-kit
   ]
   ++ lib.optionals withGstreamer (with gst_all_1; [
     gstreamer
@@ -75,12 +74,12 @@ mkDerivation rec {
     gst-plugins-good
     gst-plugins-ugly
   ])
-  ++ lib.optional withVlc vlc;
+  ++ lib.optional withVlc libvlc;
 
-  nativeBuildInputs = [ cmake ninja pkgconfig qttools ];
-
-  cmakeFlags = [
-    "-DUSE_SYSTEM_TAGLIB=ON"
+  nativeBuildInputs = [
+    cmake ninja pkg-config qttools
+  ] ++ lib.optionals stdenv.isLinux [
+    util-linux
   ];
 
   postInstall = ''
@@ -89,9 +88,11 @@ mkDerivation rec {
 
   meta = with lib; {
     description = "Music player and music collection organizer";
-    license = licenses.gpl2;
+    homepage = "https://www.strawberrymusicplayer.org/";
+    changelog = "https://raw.githubusercontent.com/jonaski/strawberry/${version}/Changelog";
+    license = licenses.gpl3Only;
     maintainers = with maintainers; [ peterhoeg ];
-    # upstream says darwin should work but they lack maintainers as of 0.6.3
+    # upstream says darwin should work but they lack maintainers as of 0.6.6
     platforms = platforms.linux;
   };
 }
