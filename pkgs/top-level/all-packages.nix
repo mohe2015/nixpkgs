@@ -3598,7 +3598,7 @@ in
     ceph-client;
   ceph-dev = ceph;
 
-  certmgr = callPackages ../tools/security/certmgr { };
+  certmgr = callPackage ../tools/security/certmgr { };
 
   cfdg = callPackage ../tools/graphics/cfdg { };
 
