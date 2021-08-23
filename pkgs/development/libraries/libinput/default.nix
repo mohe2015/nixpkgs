@@ -70,7 +70,7 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [ udev ];
 
-  patches = [ ./udev-absolute-path.patch ];
+  patches = [ ./udev-absolute-path.patch ./mouse-debounce.patch ];
 
   postPatch = ''
     patchShebangs tools/helper-copy-and-exec-from-tmp.sh
