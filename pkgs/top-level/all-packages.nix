@@ -28771,6 +28771,9 @@ with pkgs;
 
   vscode-extensions = recurseIntoAttrs (callPackage ../misc/vscode-extensions {});
 
+  vscode-registries = recurseIntoAttrs (callPackage ../misc/vscode-registries { });
+  vscode-registry-commons = callPackage ../misc/vscode-registries/commons { };
+
   vscodium = callPackage ../applications/editors/vscode/vscodium.nix { };
   vscodium-fhs = vscodium.fhs;
   vscodium-fhsWithPackages = vscodium.fhsWithPackages;
