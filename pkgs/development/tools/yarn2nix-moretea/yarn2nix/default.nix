@@ -32,14 +32,11 @@ in rec {
 
   # https://docs.npmjs.com/files/package.json#license
   # TODO: support expression syntax (OR, AND, etc)
-  spdxLicense = licstr:
+  getLicenseFromSpdxId = licstr:
     if licstr == "UNLICENSED" then
       lib.licenses.unfree
     else
-      lib.findFirst
-        (l: l ? spdxId && l.spdxId == licstr)
-        { shortName = licstr; }
-        (builtins.attrValues lib.licenses);
+      lib.getLicenseFromSpdxId licstr;
 
   # Generates the yarn.nix from the yarn.lock file
   mkYarnNix = { yarnLock, flags ? [] }:
@@ -369,7 +366,7 @@ in rec {
         description = packageJSON.description or "";
         homepage = packageJSON.homepage or "";
         version = packageJSON.version or "";
-        license = if packageJSON ? license then spdxLicense packageJSON.license else "";
+        license = if packageJSON ? license then getLicenseFromSpdxId packageJSON.license else "";
       } // (attrs.meta or {});
     });
 

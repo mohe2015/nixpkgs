@@ -1325,6 +1325,17 @@ Superuser created successfully.
           <literal>services.ddclient.passwordFile</literal>.
         </para>
       </listitem>
+      <listitem>
+        <para>
+          <literal>yarn2nix-moretea.spdxLicense</literal> is now renamed
+          to <literal>yarn2nix-moretea.getLicenseFromSpdxId</literal>,
+          and is now derived from the new
+          <literal>lib.meta.getLicenseFromSpdxId</literal>. The renamed
+          function is only referenced by
+          <literal>yarn2nix-moretea.mkYarnPackage</literal> in Nixpkgs
+          so far.
+        </para>
+      </listitem>
     </itemizedlist>
   </section>
   <section xml:id="sec-release-21.11-notable-changes">
