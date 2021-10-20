@@ -38,6 +38,7 @@
 , libcef
 , pipewireSupport ? stdenv.isLinux
 , pipewire
+, libdrm
 }:
 
 let
@@ -46,13 +47,13 @@ let
 in
 mkDerivation rec {
   pname = "obs-studio";
-  version = "27.0.1";
+  version = "27.1.3";
 
   src = fetchFromGitHub {
     owner = "obsproject";
     repo = "obs-studio";
     rev = version;
-    sha256 = "04fzsr9yizmxy0r7z2706crvnsnybpnv5kgfn77znknxxjacfhkn";
+    sha256 = "sha256-EmBzxJHai++cvdYBYuR6mQJapSTDvaiqhxGbNnJWsdk=";
     fetchSubmodules = true;
   };
 
@@ -91,6 +92,7 @@ mkDerivation rec {
     x264
     libvlc
     mbedtls
+    libdrm
   ]
   ++ optionals scriptingSupport [ luajit python3 ]
   ++ optional alsaSupport alsa-lib
