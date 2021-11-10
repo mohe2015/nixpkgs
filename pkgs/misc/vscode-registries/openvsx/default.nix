@@ -44,7 +44,7 @@ let
       (ref:
         (getExistingAttrs [ "description" "homepage" ] ref)
         // lib.optionalAttrs (builtins.hasAttr "license-raw" ref) {
-          license = yarn2nix.spdxLicense ref.license-raw;
+          license = lib.getLicenseFromSpdxId ref.license-raw;
         })
       final.registry-reference-attrs-raw;
 
