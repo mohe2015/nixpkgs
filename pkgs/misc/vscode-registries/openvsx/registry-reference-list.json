@@ -1,3 +1,4 @@
+[
 {
   "name": "java"
 , "publisher": "redhat"
@@ -17298,4 +17299,4 @@
 , "homepage": "https://github.com/microsoft/vscode-python-devicesimulator"
 , "license-raw": "MIT"
 }
-,
+]
