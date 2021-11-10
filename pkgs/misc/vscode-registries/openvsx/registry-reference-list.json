@@ -1,3 +1,4 @@
+[
 {
   "name": "vscode-lldb"
 , "publisher": "vadimcn"
@@ -6925,7 +6926,6 @@
 , "license-raw": "PROPRIETARY"
 }
 ,
-,
 {
   "name": "cheemaps"
 , "publisher": "chee"
@@ -7023,7 +7023,6 @@
 , "homepage": "https://github.com/jeroen-meijer/pubspec-assist/blob/master/README.md"
 , "license-raw": "MIT"
 }
-,
 ,
 {
   "name": "rust-analyzer"
@@ -7562,8 +7561,6 @@
 , "homepage": "https://github.com/zewish/greyburst-vscode-theme"
 , "license-raw": "MIT"
 }
-,
-,
 ,
 {
   "name": "vscode-browser-preview"
@@ -10758,8 +10755,6 @@
 , "license-raw": "SEE LICENSE IN LICENSE"
 }
 ,
-,
-,
 {
   "name": "winteriscoming"
 , "publisher": "johnpapa"
@@ -12833,8 +12828,6 @@
 , "license-raw": "MIT"
 }
 ,
-,
-,
 {
   "name": "plsql-language"
 , "publisher": "xyz"
@@ -12998,4 +12991,4 @@
 , "description": "Markdown Preview Enhanced ported to vscode"
 , "license-raw": "NCSA"
 }
-,
+]
