@@ -1288,7 +1288,6 @@
 , "homepage": "https://github.com/kdarkhan/vscode-mips-support"
 }
 ,
-,
 {
   "name": "csharp"
 , "publisher": "muhammad-sammy"
@@ -2820,7 +2819,6 @@
 , "license-raw": "MIT"
 }
 ,
-,
 {
   "name": "serenity-dsl-syntaxhighlight"
 , "publisher": "kleinesfilmroellchen"
@@ -2837,7 +2835,6 @@
 , "description": "Quarkus Tools for Visual Studio Code"
 , "license-raw": "Apache-2.0"
 }
-,
 ,
 {
   "name": "sensible-back-forward-navigation"
@@ -4436,7 +4433,6 @@
 , "license-raw": "Apache-2.0"
 }
 ,
-,
 {
   "name": "teamhub"
 , "publisher": "TeamHub"
@@ -5756,7 +5752,6 @@
 , "description": "Provides syntax highlighting and snippets for MIPS assembly language"
 , "homepage": "https://github.com/kdarkhan/vscode-mips-support"
 }
-,
 ,
 {
   "name": "sftp"
@@ -11781,7 +11776,6 @@
 , "license-raw": "SEE LICENSE IN LICENSE-vscode.txt"
 }
 ,
-,
 {
   "name": "dart"
 , "publisher": "vscode"
@@ -13608,7 +13602,6 @@
 , "description": "%extension.description%"
 , "license-raw": "SEE LICENSE IN LICENSE.txt"
 }
-,
 ,
 {
   "name": "silverstripe"
@@ -17053,7 +17046,6 @@
 , "homepage": "https://github.com/lonefy/vscode-js-css-html-formatter/blob/master/README.md"
 , "license-raw": "MIT"
 }
-,
 ,
 {
   "name": "xml"
