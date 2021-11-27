@@ -12,7 +12,7 @@
 , tables
 , xlrd
 , xlwt
-# Test inputs
+  # Test inputs
 , glibcLocales
 , hypothesis
 , jinja2
@@ -20,7 +20,7 @@
 , pytest-xdist
 , pytest-asyncio
 , XlsxWriter
-# Darwin inputs
+  # Darwin inputs
 , runtimeShell
 , libcxx
 }:
@@ -73,7 +73,8 @@ buildPythonPackage rec {
   pytestFlagsArray = [
     "--skip-slow"
     "--skip-network"
-    "--numprocesses" "0"
+    "--numprocesses"
+    "0"
   ];
 
   disabledTests = [

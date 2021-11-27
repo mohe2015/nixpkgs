@@ -19,7 +19,7 @@
 
 let
   phocWlroots = wlroots.overrideAttrs (old: {
-    patches = (old.patches or []) ++ [
+    patches = (old.patches or [ ]) ++ [
       # Temporary fix. Upstream report: https://source.puri.sm/Librem5/phosh/-/issues/422
       (fetchpatch {
         name = "0001-Revert-layer-shell-error-on-0-dimension-without-anch.patch";
@@ -47,7 +47,8 @@ let
       })
     ];
   });
-in stdenv.mkDerivation rec {
+in
+stdenv.mkDerivation rec {
   pname = "phoc";
   version = "0.9.0";
 
@@ -81,7 +82,7 @@ in stdenv.mkDerivation rec {
     phocWlroots
   ];
 
-  mesonFlags = ["-Dembed-wlroots=disabled"];
+  mesonFlags = [ "-Dembed-wlroots=disabled" ];
 
   postPatch = ''
     chmod +x build-aux/post_install.py

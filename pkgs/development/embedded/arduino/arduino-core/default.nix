@@ -69,14 +69,15 @@ let
     xorg.libXxf86vm
     zlib
   ];
-  teensy_architecture = if stdenv.hostPlatform.isx86_32 then "linux32"
-                        else if stdenv.hostPlatform.isx86_64 then "linux64"
-                        else if stdenv.hostPlatform.isAarch64 then "linuxaarch64"
-                        else if stdenv.hostPlatform.isAarch32 then "linuxarm"
-                        else throw "${stdenv.hostPlatform.system} is not supported in teensy";
+  teensy_architecture =
+    if stdenv.hostPlatform.isx86_32 then "linux32"
+    else if stdenv.hostPlatform.isx86_64 then "linux64"
+    else if stdenv.hostPlatform.isAarch64 then "linuxaarch64"
+    else if stdenv.hostPlatform.isAarch32 then "linuxarm"
+    else throw "${stdenv.hostPlatform.system} is not supported in teensy";
 
   pname = (if withTeensyduino then "teensyduino" else "arduino")
-             + lib.optionalString (!withGui) "-core";
+    + lib.optionalString (!withGui) "-core";
 in
 stdenv.mkDerivation rec {
   inherit pname;

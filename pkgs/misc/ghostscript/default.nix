@@ -1,8 +1,30 @@
-{ config, stdenv, lib, fetchurl, pkg-config, zlib, expat, openssl, autoconf
-, libjpeg, libpng, libtiff, freetype, fontconfig, libpaper, jbig2dec
-, libiconv, ijs, lcms2, fetchpatch, callPackage, bash, buildPackages
-, cupsSupport ? config.ghostscript.cups or (!stdenv.isDarwin), cups
-, x11Support ? cupsSupport, xlibsWrapper # with CUPS, X11 only adds very little
+{ config
+, stdenv
+, lib
+, fetchurl
+, pkg-config
+, zlib
+, expat
+, openssl
+, autoconf
+, libjpeg
+, libpng
+, libtiff
+, freetype
+, fontconfig
+, libpaper
+, jbig2dec
+, libiconv
+, ijs
+, lcms2
+, fetchpatch
+, callPackage
+, bash
+, buildPackages
+, cupsSupport ? config.ghostscript.cups or (!stdenv.isDarwin)
+, cups
+, x11Support ? cupsSupport
+, xlibsWrapper # with CUPS, X11 only adds very little
 }:
 
 let
@@ -63,9 +85,20 @@ stdenv.mkDerivation rec {
     ++ lib.optional cupsSupport cups;
 
   buildInputs = [
-    zlib expat openssl
-    libjpeg libpng libtiff freetype fontconfig libpaper jbig2dec
-    libiconv ijs lcms2 bash
+    zlib
+    expat
+    openssl
+    libjpeg
+    libpng
+    libtiff
+    freetype
+    fontconfig
+    libpaper
+    jbig2dec
+    libiconv
+    ijs
+    lcms2
+    bash
   ]
   ++ lib.optional x11Support xlibsWrapper
   ++ lib.optional cupsSupport cups
@@ -142,7 +175,7 @@ stdenv.mkDerivation rec {
     runHook postInstallCheck
   '';
 
-  passthru.tests.test-corpus-render = callPackage ./test-corpus-render.nix {};
+  passthru.tests.test-corpus-render = callPackage ./test-corpus-render.nix { };
 
   meta = {
     homepage = "https://www.ghostscript.com/";

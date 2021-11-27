@@ -30,7 +30,9 @@
 , yasm
 , zip
 , zlib
-, withGTK3 ? true, gtk3, gtk2
+, withGTK3 ? true
+, gtk3
+, gtk2
 }:
 
 # Only specific GCC versions are supported with branding
@@ -39,7 +41,7 @@ assert stdenv.cc.isGNU;
 assert with lib.strings; (
   versionAtLeast stdenv.cc.version "4.9"
   && !hasPrefix "6" stdenv.cc.version
-  && versionOlder stdenv.cc.version "11"
+    && versionOlder stdenv.cc.version "11"
 );
 
 stdenv.mkDerivation rec {
@@ -167,12 +169,12 @@ stdenv.mkDerivation rec {
         libpulseaudio
       ];
     in
-      ''
-        gappsWrapperArgs+=(
-          --prefix LD_LIBRARY_PATH : "${libPath}"
-        )
-    wrapGApp $out/lib/palemoon-${version}/palemoon
-  '';
+    ''
+          gappsWrapperArgs+=(
+            --prefix LD_LIBRARY_PATH : "${libPath}"
+          )
+      wrapGApp $out/lib/palemoon-${version}/palemoon
+    '';
 
   meta = with lib; {
     homepage = "https://www.palemoon.org/";

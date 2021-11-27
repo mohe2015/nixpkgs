@@ -1,10 +1,16 @@
-{ lib, buildPythonPackage, fetchPypi, pythonOlder
-, aiohttp, webargs, fetchFromGitHub, callPackage
+{ lib
+, buildPythonPackage
+, fetchPypi
+, pythonOlder
+, aiohttp
+, webargs
+, fetchFromGitHub
+, callPackage
 }:
 
 let
-  apispec3 = callPackage ../apispec/3.nix {};
-  jinja2 = callPackage ../jinja2/2.nix {};
+  apispec3 = callPackage ../apispec/3.nix { };
+  jinja2 = callPackage ../jinja2/2.nix { };
 in
 buildPythonPackage rec {
   pname = "aiohttp-apispec";

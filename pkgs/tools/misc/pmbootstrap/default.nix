@@ -1,5 +1,14 @@
-{ stdenv, lib, git, openssl, makeWrapper, buildPythonApplication, pytestCheckHook, ps
-, fetchPypi, fetchFromGitLab }:
+{ stdenv
+, lib
+, git
+, openssl
+, makeWrapper
+, buildPythonApplication
+, pytestCheckHook
+, ps
+, fetchPypi
+, fetchFromGitLab
+}:
 
 buildPythonApplication rec {
   pname = "pmbootstrap";
