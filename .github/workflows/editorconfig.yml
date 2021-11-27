@@ -11,23 +11,25 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NixOS'
+#    if: github.repository_owner == 'NixOS'
     steps:
-    - name: Get list of changed files from PR
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        echo 'PR_DIFF<<EOF' >> $GITHUB_ENV
-        gh api \
-          repos/NixOS/nixpkgs/pulls/${{github.event.number}}/files --paginate \
-          | jq '.[] | select(.status != "removed") | .filename' \
-          >> $GITHUB_ENV
-        echo 'EOF' >> $GITHUB_ENV
     - uses: actions/checkout@v2
       with:
         # pull_request_target checks out the base branch by default
         ref: refs/pull/${{ github.event.pull_request.number }}/merge
-      if: env.PR_DIFF
+    - name: Get list of changed files from PR
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git remote
+        git fetch origin --depth 1 ${{ github.event.pull_request.head.sha }}
+        git checkout ${{ github.event.pull_request.head.sha }}
+        git fetch origin --depth 1 ${{ github.event.pull_request.base.sha }}
+        git checkout ${{ github.event.pull_request.base.sha }}
+        echo 'PR_DIFF<<EOF' >> $GITHUB_ENV
+        git diff --name-only ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.base.sha }} | awk '{ print "\""$0"\""}' \
+          >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
     - uses: cachix/install-nix-action@v16
       if: env.PR_DIFF
       with:
@@ -39,6 +41,7 @@ jobs:
     - name: Checking EditorConfig
       if: env.PR_DIFF
       run: |
+        git checkout refs/remotes/pull/${{ github.event.pull_request.number }}/merge
         echo "$PR_DIFF" | xargs editorconfig-checker -disable-indent-size
     - if: ${{ failure() }}
       run: |
