@@ -31,7 +31,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ pkg-config autoconf automake ];
 
   buildInputs = [ ncurses libxml2 gnutls texinfo gettext jansson
-    AppKit Carbon Cocoa IOKit OSAKit Quartz QuartzCore WebKit
+    AppKit Carbon Cocoa IOKit OSAKit Quartz QuartzCore WebKit 
     ImageCaptureCore GSS ImageIO   # may be optional
   ];
 
