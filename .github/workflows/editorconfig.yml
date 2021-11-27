@@ -41,6 +41,7 @@ jobs:
     - name: Checking EditorConfig
       if: env.PR_DIFF
       run: |
+        git checkout refs/pull/${{ github.event.pull_request.number }}/merge
         echo "$PR_DIFF" | xargs editorconfig-checker -disable-indent-size
     - if: ${{ failure() }}
       run: |
