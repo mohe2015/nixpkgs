@@ -21,6 +21,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        git checkout ${{ github.event.pull_request.head.sha }}
         echo 'PR_DIFF<<EOF' >> $GITHUB_ENV
         git diff --name-only ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.base.sha }} \
           >> $GITHUB_ENV
