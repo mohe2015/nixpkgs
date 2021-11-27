@@ -27,7 +27,7 @@ jobs:
         git fetch origin --depth 1 ${{ github.event.pull_request.base.sha }}
         git checkout ${{ github.event.pull_request.base.sha }}
         echo 'PR_DIFF<<EOF' >> $GITHUB_ENV
-        git diff --name-only ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.base.sha }} | awk '{ print "\""$0"\""}' \
+        git diff --diff-filter=ACM --name-only ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.base.sha }} | awk '{ print "\""$0"\""}' \
           >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
     - uses: cachix/install-nix-action@v16
