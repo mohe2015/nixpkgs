@@ -38,10 +38,12 @@ jobs:
     - name: install editorconfig-checker
       run: nix-env -iA editorconfig-checker -f '<nixpkgs>'
       if: env.PR_DIFF
+    - name: Checkout merge commit
+      run: git checkout refs/remotes/pull/${{ github.event.pull_request.number }}/merge
+      if: env.PR_DIFF
     - name: Checking EditorConfig
       if: env.PR_DIFF
       run: |
-        git checkout refs/remotes/pull/${{ github.event.pull_request.number }}/merge
         echo "$PR_DIFF" | xargs editorconfig-checker -disable-indent-size
     - if: ${{ failure() }}
       run: |
