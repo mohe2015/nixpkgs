@@ -3,7 +3,7 @@
 let
   mkStudio = opts: callPackage (import ./common.nix opts) {
     fontsConf = makeFontsConf {
-      fontDirectories = [];
+      fontDirectories = [ ];
     };
     inherit (gnome2) GConf gnome_vfs;
     inherit buildFHSUserEnv;
@@ -16,11 +16,13 @@ let
     version = "2021.1.1.17"; # "Android Studio Bumblebee (2021.1.1) Beta 4"
     sha256Hash = "5WLUgCmdrK0PArc4eQQTNbEokq4DReKRwsZOWKb+Td4=";
   };
-  latestVersion = { # canary & dev
+  latestVersion = {
+    # canary & dev
     version = "2021.2.1.3"; # "Android Studio Chipmunk (2021.2.1) Canary 3"
     sha256Hash = "sha256-xIVdM28NDadvJklDIw71iJ7Z5GPVJ1ZDJ+t1y+bt8cE=";
   };
-in {
+in
+{
   # Attributes are named by their corresponding release channels
 
   stable = mkStudio (stableVersion // {

@@ -1,4 +1,8 @@
-{ lib, fetchFromGitHub, cacert, openssl, nixosTests
+{ lib
+, fetchFromGitHub
+, cacert
+, openssl
+, nixosTests
 , python3
 }:
 
@@ -22,7 +26,7 @@ let
       });
       werkzeug = self.callPackage ../../../development/python-modules/werkzeug/1.nix { };
       flask = self.callPackage ../../../development/python-modules/flask/1.nix { };
-      sqlsoup = super.sqlsoup.overrideAttrs ({ meta ? {}, ... }: {
+      sqlsoup = super.sqlsoup.overrideAttrs ({ meta ? { }, ... }: {
         meta = meta // { broken = false; };
       });
     };
@@ -41,11 +45,38 @@ python3'.pkgs.buildPythonPackage rec {
   };
 
   propagatedBuildInputs = with python3'.pkgs; [
-    cryptography pyrad pymysql python-dateutil flask-versioned flask_script
-    defusedxml croniter flask_migrate pyjwt1 configobj sqlsoup pillow
-    python-gnupg passlib pyopenssl beautifulsoup4 smpplib flask-babel
-    ldap3 huey pyyaml qrcode oauth2client requests lxml cbor2 psycopg2
-    pydash ecdsa google-auth importlib-metadata
+    cryptography
+    pyrad
+    pymysql
+    python-dateutil
+    flask-versioned
+    flask_script
+    defusedxml
+    croniter
+    flask_migrate
+    pyjwt1
+    configobj
+    sqlsoup
+    pillow
+    python-gnupg
+    passlib
+    pyopenssl
+    beautifulsoup4
+    smpplib
+    flask-babel
+    ldap3
+    huey
+    pyyaml
+    qrcode
+    oauth2client
+    requests
+    lxml
+    cbor2
+    psycopg2
+    pydash
+    ecdsa
+    google-auth
+    importlib-metadata
   ];
 
   passthru.tests = { inherit (nixosTests) privacyidea; };

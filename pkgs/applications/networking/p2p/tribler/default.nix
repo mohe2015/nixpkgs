@@ -1,13 +1,19 @@
-{ stdenv, lib, fetchurl, python3, makeWrapper
-, libtorrent-rasterbar-1_2_x, qt5
+{ stdenv
+, lib
+, fetchurl
+, python3
+, makeWrapper
+, libtorrent-rasterbar-1_2_x
+, qt5
 }:
 
 let
   libtorrent = (python3.pkgs.toPythonModule (
     libtorrent-rasterbar-1_2_x.override { python = python3; })).python;
 
-  aiohttp-apispec = python3.pkgs.callPackage 
-    ../../../../development/python-modules/aiohttp-apispec/unstable.nix { };
+  aiohttp-apispec = python3.pkgs.callPackage
+    ../../../../development/python-modules/aiohttp-apispec/unstable.nix
+    { };
 in
 stdenv.mkDerivation rec {
   pname = "tribler";

@@ -32,7 +32,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck= [
+  pythonImportsCheck = [
     "seaborn"
   ];
 

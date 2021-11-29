@@ -20,11 +20,12 @@ let
     };
 
     x86_64-darwin = fetchurl {
-        url = "https://github.com/symfony/cli/releases/download/v${version}/symfony_darwin_amd64.gz";
-        sha256 = "00325xz7xl3bprj5zbg5yhn36jf4n37zlyag10m8zcmq8asa6k51";
-      };
+      url = "https://github.com/symfony/cli/releases/download/v${version}/symfony_darwin_amd64.gz";
+      sha256 = "00325xz7xl3bprj5zbg5yhn36jf4n37zlyag10m8zcmq8asa6k51";
+    };
   };
-in stdenvNoCC.mkDerivation rec {
+in
+stdenvNoCC.mkDerivation rec {
   inherit version;
   pname = "symfony-cli";
 

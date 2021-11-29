@@ -1,5 +1,10 @@
-{ lib, stdenv, fetchFromGitHub, buildPackages
-, autoreconfHook, pkg-config, gettext
+{ lib
+, stdenv
+, fetchFromGitHub
+, buildPackages
+, autoreconfHook
+, pkg-config
+, gettext
 , libusb1
 , libtool
 , libexif
@@ -37,17 +42,20 @@ stdenv.mkDerivation rec {
 
   hardeningDisable = [ "format" ];
 
-  postInstall = let
-    executablePrefix = if stdenv.buildPlatform == stdenv.hostPlatform then
-      "$out"
-    else
-      buildPackages.libgphoto2;
-  in ''
-    mkdir -p $out/lib/udev/rules.d
-    ${executablePrefix}/lib/libgphoto2/print-camera-list \
-        udev-rules version 175 group camera \
-        >$out/lib/udev/rules.d/40-gphoto2.rules
-  '';
+  postInstall =
+    let
+      executablePrefix =
+        if stdenv.buildPlatform == stdenv.hostPlatform then
+          "$out"
+        else
+          buildPackages.libgphoto2;
+    in
+    ''
+      mkdir -p $out/lib/udev/rules.d
+      ${executablePrefix}/lib/libgphoto2/print-camera-list \
+          udev-rules version 175 group camera \
+          >$out/lib/udev/rules.d/40-gphoto2.rules
+    '';
 
   meta = {
     homepage = "http://www.gphoto.org/proj/libgphoto2/";

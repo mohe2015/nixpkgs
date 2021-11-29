@@ -17,7 +17,8 @@ let
     gemset = ./gemset.nix;
   };
 
-in stdenv.mkDerivation {
+in
+stdenv.mkDerivation {
 
   pname = "docbookrx";
   version = "unstable-2018-05-18";
