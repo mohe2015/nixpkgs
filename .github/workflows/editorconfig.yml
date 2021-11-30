@@ -33,6 +33,7 @@ jobs:
 
         # everything except --diff-filter=D (deleted)
         git diff --diff-filter=ACMRTUXB --name-only ${{ github.event.pull_request.base.ref }} FETCH_HEAD > $HOME/changed_files
+        cat $HOME/changed_files
     - name: Checking EditorConfig
       run: |
         cat $HOME/changed_files | xargs -r editorconfig-checker -disable-indent-size
