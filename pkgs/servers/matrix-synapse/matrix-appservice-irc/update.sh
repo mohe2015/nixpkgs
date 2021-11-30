@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#! nix-shell -I nixpkgs=. -i bash -p nodePackages.node2nix nodejs-16_x curl jq nix
+#! nix-shell -I nixpkgs=. -i bash -p nodejs-17_x curl jq nix yarn prefetch-yarn-deps
 
 set -euo pipefail
 # cd to the folder containing this script
@@ -10,10 +10,9 @@ TARGET_VERSION="$(curl https://api.github.com/repos/matrix-org/matrix-appservice
 
 echo "matrix-appservice-irc: $CURRENT_VERSION -> $TARGET_VERSION"
 
-rm -f package.json package-lock.json
+rm -f package.json package-lock.json yarn.lock
 wget https://github.com/matrix-org/matrix-appservice-irc/raw/$TARGET_VERSION/package.json
-wget -O package-lock-temp.json https://github.com/matrix-org/matrix-appservice-irc/raw/$TARGET_VERSION/package-lock.json
-
-# Apparently this is done by r-ryantm, so only uncomment for manual usage
-#git add ./package.json ./node-packages.nix
-#git commit -m "matrix-appservice-irc: ${CURRENT_VERSION} -> ${TARGET_VERSION}"
+wget https://github.com/matrix-org/matrix-appservice-irc/raw/$TARGET_VERSION/package-lock.json
+yarn import
+yarn_hash=$(prefetch-yarn-deps yarn.lock)
+echo $yarn_hash
