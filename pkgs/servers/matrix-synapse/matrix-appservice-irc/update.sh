@@ -1,11 +1,11 @@
 #!/usr/bin/env nix-shell
-#! nix-shell -i bash -p nodePackages.node2nix nodejs-12_x curl jq nix
+#! nix-shell -I nixpkgs=. -i bash -p nodePackages.node2nix nodejs-17_x curl jq nix
 
 set -euo pipefail
 # cd to the folder containing this script
 cd "$(dirname "$0")"
 
-CURRENT_VERSION=$(nix eval --raw '(with import ../../../../. {}; matrix-appservice-irc.version)')
+CURRENT_VERSION=0.30.0
 TARGET_VERSION="$(curl https://api.github.com/repos/matrix-org/matrix-appservice-irc/releases/latest | jq --exit-status -r ".tag_name")"
 
 if [[ "$CURRENT_VERSION" == "$TARGET_VERSION" ]]; then
