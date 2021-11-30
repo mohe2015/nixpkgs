@@ -22,18 +22,17 @@ jobs:
       run: nix-env -iA editorconfig-checker -f '<nixpkgs>'
     - name: Get list of changed files from PR
       run: |
-        git fetch origin --depth 1 ${{ github.event.pull_request.head.sha }}
-        git checkout ${{ github.event.pull_request.head.sha }}
-
-        git fetch origin --depth 1 ${{ github.event.pull_request.base.sha }}
-        git checkout ${{ github.event.pull_request.base.sha }}
+        # TODO the better way may be to get the commit before the merge commit but I don't know.
+        echo ${{ github.event.pull_request.base.ref }}
+        git fetch origin --depth 1 ${{ github.event.pull_request.base.ref }}
+        git checkout ${{ github.event.pull_request.base.ref }}
 
         git fetch origin --depth 1 pull/${{ github.event.pull_request.number }}/merge
         # check this out last as editorconfig should check this commit
         git checkout FETCH_HEAD
 
         # everything except --diff-filter=D (deleted)
-        git diff --diff-filter=ACMRTUXB --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} > $HOME/changed_files
+        git diff --diff-filter=ACMRTUXB --name-only ${{ github.event.pull_request.base.ref }} FETCH_HEAD > $HOME/changed_files
     - name: Checking EditorConfig
       run: |
         cat $HOME/changed_files | xargs -r editorconfig-checker -disable-indent-size
