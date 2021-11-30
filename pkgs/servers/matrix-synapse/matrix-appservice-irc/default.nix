@@ -1,8 +1,8 @@
-{ pkgs, nodePackages, makeWrapper, nixosTests, nodejs-17_x, stdenv, lib, fetchFromGitHub }:
+{ pkgs, nodePackages, makeWrapper, nixosTests, nodejs-16_x, stdenv, lib, fetchFromGitHub }:
 
 let
   ourNodePackages = import ./node-composition.nix {
-    nodejs = nodejs-17_x;
+    nodejs = nodejs-16_x;
     inherit pkgs;
     inherit (stdenv.hostPlatform) system;
   };
@@ -22,7 +22,7 @@ ourNodePackages.package.override {
   nativeBuildInputs = [ makeWrapper nodePackages.node-gyp-build ];
 
   postInstall = ''
-    makeWrapper '${nodejs-17_x}/bin/node' "$out/bin/matrix-appservice-irc" \
+    makeWrapper '${nodejs-16_x}/bin/node' "$out/bin/matrix-appservice-irc" \
       --add-flags "$out/lib/node_modules/matrix-appservice-irc/app.js"
   '';
 
