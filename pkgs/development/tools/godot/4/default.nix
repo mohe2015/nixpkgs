@@ -22,6 +22,21 @@
 , speechd
 , fontconfig
 , udev
+, embree
+, enet
+, freetype
+, graphite2
+, harfbuzz
+, libogg
+, libpng
+, libtheora
+, libvorbis
+, libwebp
+, mbedtls
+, miniupnpc
+, pcre2
+, zlib
+, zstd
 , withPlatform ? "linuxbsd"
 , withTarget ? "editor"
 , withPrecision ? "single"
@@ -31,6 +46,7 @@
 , withFontconfig ? true
 , withUdev ? true
 , withTouch ? true
+, withNonPortableSystemLibraries ? true # TODO FIXME default
 }:
 
 assert lib.asserts.assertOneOf "withPrecision" withPrecision [ "single" "double" ];
@@ -49,17 +65,32 @@ let
     fontconfig = withFontconfig; # Use fontconfig for system fonts support
     udev = withUdev; # Use udev for gamepad connection callbacks
     touch = withTouch; # Enable touch events
+    builtin_embree = withNonPortableSystemLibraries;
+    builtin_enet = withNonPortableSystemLibraries;
+    builtin_freetype = withNonPortableSystemLibraries;
+    builtin_graphite = withNonPortableSystemLibraries;
+    builtin_harfbuzz = withNonPortableSystemLibraries;
+    builtin_libogg = withNonPortableSystemLibraries;
+    builtin_libpng = withNonPortableSystemLibraries;
+    builtin_libtheora = withNonPortableSystemLibraries;
+    builtin_libvorbis = withNonPortableSystemLibraries;
+    builtin_libwebp = withNonPortableSystemLibraries;
+    builtin_mbedtls = withNonPortableSystemLibraries;
+    builtin_miniupnpc = withNonPortableSystemLibraries;
+    builtin_pcre2 = withNonPortableSystemLibraries;
+    builtin_zlib = withNonPortableSystemLibraries;
+    builtin_zstd = withNonPortableSystemLibraries;
   };
 in
 stdenv.mkDerivation rec {
   pname = "godot";
-  version = "4.1-stable";
+  version = "4.1.1-rc1";
 
   src = fetchFromGitHub {
     owner = "godotengine";
     repo = "godot";
-    rev = version;
-    hash = "sha256-v9qKrPYQz4c+xkSu/2ru7ZE5EzKVyXhmrxyHZQkng2U=";
+    rev = "e709ad4d6407e52dc62f00a471d13eb6c89f2c4c";
+    hash = "sha256-8Vwf5KIwUL3hvV6OrGeHaWtTLktcurO5keyk3dh0g78=";
   };
 
   nativeBuildInputs = [
@@ -70,6 +101,21 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     scons
+    embree
+    enet
+    freetype
+    graphite2
+    harfbuzz
+    libogg
+    libpng
+    libtheora
+    libvorbis
+    libwebp
+    mbedtls
+    miniupnpc
+    pcre2
+    zlib
+    zstd
   ];
 
   runtimeDependencies = [
@@ -94,10 +140,18 @@ stdenv.mkDerivation rec {
   ++ lib.optional withFontconfig fontconfig.lib
   ++ lib.optional withUdev udev;
 
+  dontStrip = true;
+
   enableParallelBuilding = true;
 
   # Options from 'godot/SConstruct' and 'godot/platform/linuxbsd/detect.py'
-  sconsFlags = [ "production=true" ];
+  sconsFlags = [ "production=true" ]; # "dev_mode=yes" "dev_build=yes" "debug_symbols=yes" "optimize=debug"
+  # separate_debug_symbols=yes
+  # lto: Link-time optimization (production builds) (none|auto|thin|full)
+  # deprecated=false
+  # fast_unsafe: Enable unsafe options for faster rebuilds (yes|no)
+  # use_precise_math_checks: Math checks use very precise epsilon (debug option) (yes|no)
+  
   preConfigure = ''
     sconsFlags+=" ${
       lib.concatStringsSep " "
