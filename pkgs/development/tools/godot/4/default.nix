@@ -65,26 +65,26 @@ let
     fontconfig = withFontconfig; # Use fontconfig for system fonts support
     udev = withUdev; # Use udev for gamepad connection callbacks
     touch = withTouch; # Enable touch events
-    builtin_embree = withNonPortableSystemLibraries;
-    builtin_enet = withNonPortableSystemLibraries;
-    builtin_freetype = withNonPortableSystemLibraries;
-    builtin_graphite = withNonPortableSystemLibraries;
-    builtin_harfbuzz = withNonPortableSystemLibraries;
-    builtin_libogg = withNonPortableSystemLibraries;
-    builtin_libpng = withNonPortableSystemLibraries;
-    builtin_libtheora = withNonPortableSystemLibraries;
-    builtin_libvorbis = withNonPortableSystemLibraries;
-    builtin_libwebp = withNonPortableSystemLibraries;
-    builtin_mbedtls = withNonPortableSystemLibraries;
-    builtin_miniupnpc = withNonPortableSystemLibraries;
-    builtin_pcre2 = withNonPortableSystemLibraries;
-    builtin_zlib = withNonPortableSystemLibraries;
-    builtin_zstd = withNonPortableSystemLibraries;
+    builtin_embree = ! withNonPortableSystemLibraries;
+    builtin_enet = ! withNonPortableSystemLibraries;
+    builtin_freetype = ! withNonPortableSystemLibraries;
+    builtin_graphite = ! withNonPortableSystemLibraries;
+    builtin_harfbuzz = ! withNonPortableSystemLibraries;
+    builtin_libogg = ! withNonPortableSystemLibraries;
+    builtin_libpng = ! withNonPortableSystemLibraries;
+    builtin_libtheora = ! withNonPortableSystemLibraries;
+    builtin_libvorbis = ! withNonPortableSystemLibraries;
+    builtin_libwebp = ! withNonPortableSystemLibraries;
+    builtin_mbedtls = ! withNonPortableSystemLibraries;
+    builtin_miniupnpc = ! withNonPortableSystemLibraries;
+    builtin_pcre2 = ! withNonPortableSystemLibraries;
+    builtin_zlib = ! withNonPortableSystemLibraries;
+    builtin_zstd = ! withNonPortableSystemLibraries;
   };
 in
 stdenv.mkDerivation rec {
   pname = "godot";
-  version = "4.1.1-rc1";
+  version = "4.1.dev";
 
   src = fetchFromGitHub {
     owner = "godotengine";
@@ -105,7 +105,11 @@ stdenv.mkDerivation rec {
     enet
     freetype
     graphite2
-    harfbuzz
+    (harfbuzz.override {
+      #withCoreText = stdenv.isDarwin;
+      #withGraphite2 = true;
+      withIcu = true;
+    })
     libogg
     libpng
     libtheora
@@ -151,7 +155,7 @@ stdenv.mkDerivation rec {
   # deprecated=false
   # fast_unsafe: Enable unsafe options for faster rebuilds (yes|no)
   # use_precise_math_checks: Math checks use very precise epsilon (debug option) (yes|no)
-  
+
   preConfigure = ''
     sconsFlags+=" ${
       lib.concatStringsSep " "
