@@ -20,6 +20,7 @@
 , libpulseaudio
 , dbus
 , speechd
+, mold
 , fontconfig
 , udev
 , brotli
@@ -74,7 +75,7 @@ let
     # scons -h
     builtin_brotli = ! withNonPortableSystemLibraries;
     #builtin_certs = ! withNonPortableSystemLibraries;
-    builtin_embree = ! withNonPortableSystemLibraries;
+    # builtin_embree = ! withNonPortableSystemLibraries; # broken
     builtin_enet = ! withNonPortableSystemLibraries;
     builtin_freetype = ! withNonPortableSystemLibraries;
     # builtin_msdfgen = ! withNonPortableSystemLibraries;
@@ -101,6 +102,8 @@ let
     builtin_zstd = ! withNonPortableSystemLibraries;
 
     deprecated = false;
+
+    linker = "mold";
   };
 in
 stdenv.mkDerivation rec {
@@ -118,6 +121,7 @@ stdenv.mkDerivation rec {
     pkg-config
     autoPatchelfHook
     installShellFiles
+    mold # TODO do this in stdenv instead?
   ];
 
   buildInputs = [
@@ -175,7 +179,7 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   # Options from 'godot/SConstruct' and 'godot/platform/linuxbsd/detect.py'
-  sconsFlags = [ if ! enableDebug "production=true" else "dev_mode=yes dev_build=yes debug_symbols=yes optimize=debug" ];
+  sconsFlags = [ (if ! enableDebug then "production=true" else "dev_mode=yes dev_build=yes debug_symbols=yes optimize=debug") ];
   # separate_debug_symbols=yes
   # fast_unsafe: Enable unsafe options for faster rebuilds (yes|no)
 
