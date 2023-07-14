@@ -51,7 +51,8 @@
 , withFontconfig ? true
 , withUdev ? true
 , withTouch ? true
-, withNonPortableSystemLibraries ? true # TODO FIXME default
+, withNonPortableSystemLibraries ? true # TODO FIXME default false
+, enableDebug ? true # TODO FIXME default false
 }:
 
 assert lib.asserts.assertOneOf "withPrecision" withPrecision [ "single" "double" ];
@@ -77,7 +78,7 @@ let
     builtin_enet = ! withNonPortableSystemLibraries;
     builtin_freetype = ! withNonPortableSystemLibraries;
     # builtin_msdfgen = ! withNonPortableSystemLibraries;
-    builtin_glslang = ! withNonPortableSystemLibraries;
+    # builtin_glslang = ! withNonPortableSystemLibraries; # broken
     builtin_graphite = ! withNonPortableSystemLibraries;
     builtin_harfbuzz = ! withNonPortableSystemLibraries;
     builtin_icu4c = ! withNonPortableSystemLibraries;
@@ -87,17 +88,19 @@ let
     builtin_libvorbis = ! withNonPortableSystemLibraries;
     builtin_libwebp = ! withNonPortableSystemLibraries;
     # builtin_wslay = ! withNonPortableSystemLibraries;
-    builtin_mbedtls = ! withNonPortableSystemLibraries;
+    # builtin_mbedtls = ! withNonPortableSystemLibraries; # broken
     builtin_miniupnpc = ! withNonPortableSystemLibraries;
     builtin_openxr = ! withNonPortableSystemLibraries;
     builtin_pcre2 = ! withNonPortableSystemLibraries;
-    builtin_recastnavigation = ! withNonPortableSystemLibraries;
+    # builtin_recastnavigation = ! withNonPortableSystemLibraries; # broken
     # builtin_rvo2_2d = ! withNonPortableSystemLibraries;
     # builtin_rvo2_3d = ! withNonPortableSystemLibraries;
     # builtin_squish = ! withNonPortableSystemLibraries;
     # builtin_xatlas = ! withNonPortableSystemLibraries;
     builtin_zlib = ! withNonPortableSystemLibraries;
     builtin_zstd = ! withNonPortableSystemLibraries;
+
+    deprecated = false;
   };
 in
 stdenv.mkDerivation rec {
@@ -172,12 +175,9 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   # Options from 'godot/SConstruct' and 'godot/platform/linuxbsd/detect.py'
-  sconsFlags = [ "production=true" ]; # "dev_mode=yes" "dev_build=yes" "debug_symbols=yes" "optimize=debug"
+  sconsFlags = [ if ! enableDebug "production=true" else "dev_mode=yes dev_build=yes debug_symbols=yes optimize=debug" ];
   # separate_debug_symbols=yes
-  # lto: Link-time optimization (production builds) (none|auto|thin|full)
-  # deprecated=false
   # fast_unsafe: Enable unsafe options for faster rebuilds (yes|no)
-  # use_precise_math_checks: Math checks use very precise epsilon (debug option) (yes|no)
 
   preConfigure = ''
     sconsFlags+=" ${
