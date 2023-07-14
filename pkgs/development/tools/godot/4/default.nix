@@ -55,12 +55,9 @@ stdenv.mkDerivation rec {
   pname = "godot";
   version = "4.0.3-stable";
 
-  src = fetchFromGitHub {
-    owner = "godotengine";
-    repo = "godot";
-    rev = version;
-    hash = "sha256-g9+CV3HsiJqiSJpZvK0N7BqKzp2Pvi6otjRLsFdmWGk=";
-  };
+  src = /etc/nixos/godot;
+
+  dontStrip = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -97,7 +94,7 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   # Options from 'godot/SConstruct' and 'godot/platform/linuxbsd/detect.py'
-  sconsFlags = [ "production=true" ];
+  sconsFlags = [ "dev_mode=yes" "dev_build=yes" "debug_symbols=yes" "optimize=debug" ];
   preConfigure = ''
     sconsFlags+=" ${
       lib.concatStringsSep " "
