@@ -22,11 +22,14 @@
 , speechd
 , fontconfig
 , udev
+, brotli
 , embree
 , enet
 , freetype
+, glslang
 , graphite2
 , harfbuzz
+, icu
 , libogg
 , libpng
 , libtheora
@@ -34,7 +37,9 @@
 , libwebp
 , mbedtls
 , miniupnpc
+, openxr-loader
 , pcre2
+, recastnavigation
 , zlib
 , zstd
 , withPlatform ? "linuxbsd"
@@ -65,19 +70,32 @@ let
     fontconfig = withFontconfig; # Use fontconfig for system fonts support
     udev = withUdev; # Use udev for gamepad connection callbacks
     touch = withTouch; # Enable touch events
+    # scons -h
+    builtin_brotli = ! withNonPortableSystemLibraries;
+    #builtin_certs = ! withNonPortableSystemLibraries;
     builtin_embree = ! withNonPortableSystemLibraries;
     builtin_enet = ! withNonPortableSystemLibraries;
     builtin_freetype = ! withNonPortableSystemLibraries;
+    # builtin_msdfgen = ! withNonPortableSystemLibraries;
+    builtin_glslang = ! withNonPortableSystemLibraries;
     builtin_graphite = ! withNonPortableSystemLibraries;
     builtin_harfbuzz = ! withNonPortableSystemLibraries;
+    builtin_icu4c = ! withNonPortableSystemLibraries;
     builtin_libogg = ! withNonPortableSystemLibraries;
     builtin_libpng = ! withNonPortableSystemLibraries;
     builtin_libtheora = ! withNonPortableSystemLibraries;
     builtin_libvorbis = ! withNonPortableSystemLibraries;
     builtin_libwebp = ! withNonPortableSystemLibraries;
+    # builtin_wslay = ! withNonPortableSystemLibraries;
     builtin_mbedtls = ! withNonPortableSystemLibraries;
     builtin_miniupnpc = ! withNonPortableSystemLibraries;
+    builtin_openxr = ! withNonPortableSystemLibraries;
     builtin_pcre2 = ! withNonPortableSystemLibraries;
+    builtin_recastnavigation = ! withNonPortableSystemLibraries;
+    # builtin_rvo2_2d = ! withNonPortableSystemLibraries;
+    # builtin_rvo2_3d = ! withNonPortableSystemLibraries;
+    # builtin_squish = ! withNonPortableSystemLibraries;
+    # builtin_xatlas = ! withNonPortableSystemLibraries;
     builtin_zlib = ! withNonPortableSystemLibraries;
     builtin_zstd = ! withNonPortableSystemLibraries;
   };
@@ -101,15 +119,18 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     scons
+    brotli
     embree
     enet
     freetype
+    glslang
     graphite2
     (harfbuzz.override {
       #withCoreText = stdenv.isDarwin;
       #withGraphite2 = true;
       withIcu = true;
     })
+    icu
     libogg
     libpng
     libtheora
@@ -117,7 +138,9 @@ stdenv.mkDerivation rec {
     libwebp
     mbedtls
     miniupnpc
+    openxr-loader
     pcre2
+    recastnavigation
     zlib
     zstd
   ];
