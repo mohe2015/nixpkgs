@@ -90,7 +90,7 @@ let
     builtin_libwebp = ! withNonPortableSystemLibraries;
     # builtin_wslay = ! withNonPortableSystemLibraries;
     # builtin_mbedtls = ! withNonPortableSystemLibraries; # broken
-    builtin_miniupnpc = ! withNonPortableSystemLibraries;
+    # builtin_miniupnpc = ! withNonPortableSystemLibraries; # broken
     builtin_openxr = ! withNonPortableSystemLibraries;
     builtin_pcre2 = ! withNonPortableSystemLibraries;
     # builtin_recastnavigation = ! withNonPortableSystemLibraries; # broken
