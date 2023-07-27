@@ -510,6 +510,8 @@ self: super: with self; {
 
   ansible-runner = callPackage ../development/python-modules/ansible-runner { };
 
+  ansible-vault-rw = callPackage ../development/python-modules/ansible-vault-rw { };
+
   ansi = callPackage ../development/python-modules/ansi { };
 
   ansicolor = callPackage ../development/python-modules/ansicolor { };
@@ -7015,6 +7017,8 @@ self: super: with self; {
 
   nine = callPackage ../development/python-modules/nine { };
 
+  ninja-python = callPackage ../development/python-modules/ninja { };
+
   nipy = callPackage ../development/python-modules/nipy { };
 
   nipype = callPackage ../development/python-modules/nipype {
@@ -7402,9 +7406,13 @@ self: super: with self; {
 
   opentelemetry-instrumentation = callPackage ../development/python-modules/opentelemetry-instrumentation { };
 
+  opentelemetry-instrumentation-aiohttp-client = callPackage ../development/python-modules/opentelemetry-instrumentation-aiohttp-client { };
+
   opentelemetry-instrumentation-asgi = callPackage ../development/python-modules/opentelemetry-instrumentation-asgi { };
 
   opentelemetry-instrumentation-django = callPackage ../development/python-modules/opentelemetry-instrumentation-django { };
+
+  opentelemetry-instrumentation-grpc = callPackage ../development/python-modules/opentelemetry-instrumentation-grpc { };
 
   opentelemetry-instrumentation-wsgi = callPackage ../development/python-modules/opentelemetry-instrumentation-wsgi { };
 
@@ -7874,6 +7882,8 @@ self: super: with self; {
   picobox = callPackage ../development/python-modules/picobox { };
 
   picos = callPackage ../development/python-modules/picos { };
+
+  picosvg = callPackage ../development/python-modules/picosvg { };
 
   piccolo-theme = callPackage ../development/python-modules/piccolo-theme { };
 
@@ -12996,6 +13006,8 @@ self: super: with self; {
 
   uc-micro-py = callPackage ../development/python-modules/uc-micro-py { };
 
+  ucsmsdk = callPackage ../development/python-modules/ucsmsdk { };
+
   udatetime = callPackage ../development/python-modules/udatetime { };
 
   ueberzug = callPackage ../development/python-modules/ueberzug {
@@ -13091,6 +13103,8 @@ self: super: with self; {
   unrardll = callPackage ../development/python-modules/unrardll { };
 
   unrpa = callPackage ../development/python-modules/unrpa { };
+
+  unstructured = callPackage ../development/python-modules/unstructured { };
 
   unstructured-inference = callPackage ../development/python-modules/unstructured-inference { };
 
@@ -13197,6 +13211,8 @@ self: super: with self; {
   varint = callPackage ../development/python-modules/varint { };
 
   vat-moss = callPackage ../development/python-modules/vat-moss { };
+
+  vcard = callPackage ../development/python-modules/vcard { };
 
   vcrpy = callPackage ../development/python-modules/vcrpy { };
 
