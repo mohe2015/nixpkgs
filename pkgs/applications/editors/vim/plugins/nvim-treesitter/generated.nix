@@ -513,12 +513,12 @@
   };
   fortran = buildGrammar {
     language = "fortran";
-    version = "0.0.0+rev=31552ac";
+    version = "0.0.0+rev=482bdb8";
     src = fetchFromGitHub {
       owner = "stadelmanma";
       repo = "tree-sitter-fortran";
-      rev = "31552ac43ecaffa443a12ebea68cc526d334892f";
-      hash = "sha256-6ywdhlQGjivA2RV5345A0BiybAJOn9cIM03GMHjVoiM=";
+      rev = "482bdb8b8fb7305b928937379820aa6449e359a7";
+      hash = "sha256-x2Cm1yUfhlkl8zgbQFPe/IxVNGpX050J3wjsqe7uOW8=";
     };
     meta.homepage = "https://github.com/stadelmanma/tree-sitter-fortran";
   };
@@ -1509,12 +1509,12 @@
   };
   puppet = buildGrammar {
     language = "puppet";
-    version = "0.0.0+rev=8e13a37";
+    version = "0.0.0+rev=9ce9a5f";
     src = fetchFromGitHub {
       owner = "amaanq";
       repo = "tree-sitter-puppet";
-      rev = "8e13a3768091703ac27ef1e5763e542af7f6dead";
-      hash = "sha256-vBxCqFsSF2kwUK5uNWDPvl7F+mcD8rdTzsckcab4vUU=";
+      rev = "9ce9a5f7d64528572aaa8d59459ba869e634086b";
+      hash = "sha256-YEjjy9WLwITERYqoeSVrRYnwVBIAwdc4o0lvAK9wizw=";
     };
     meta.homepage = "https://github.com/amaanq/tree-sitter-puppet";
   };

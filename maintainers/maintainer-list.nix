@@ -4147,6 +4147,12 @@
       fingerprint = "1C4E F4FE 7F8E D8B7 1E88 CCDF BAB1 D15F B7B4 D4CE";
     }];
   };
+  dgollings = {
+    email = "daniel.gollings+nixpkgs@gmail.com";
+    github = "dgollings";
+    githubId = 2032823;
+    name = "Daniel Gollings";
+  };
   dgonyeo = {
     email = "derek@gonyeo.com";
     github = "dgonyeo";
@@ -9853,6 +9859,15 @@
     githubId = 22085373;
     name = "Luis Hebendanz";
   };
+  luisdaranda = {
+    email = "luisdomingoaranda@gmail.com";
+    github = "propet";
+    githubId = 8515861;
+    name = "Luis D. Aranda Sánchez";
+    keys = [{
+      fingerprint = "AB7C 81F4 9E07 CC64 F3E7  BC25 DCAC C6F4 AAFC C04E";
+    }];
+  };
   luisnquin = {
     email = "lpaandres2020@gmail.com";
     matrix = "@luisnquin:matrix.org";
@@ -9947,6 +9962,12 @@
     github = "LunNova";
     githubId = 782440;
     name = "Luna Nova";
+  };
+  lurkki = {
+    email = "jussi.kuokkanen@protonmail.com";
+    github = "Lurkki14";
+    githubId = 44469719;
+    name = "Jussi Kuokkanen";
   };
   lux = {
     email = "lux@lux.name";
@@ -15620,6 +15641,10 @@
     github = "spacekookie";
     githubId = 7669898;
     name = "Katharina Fey";
+  };
+  spalf = {
+    email = "tom@tombarrett.xyz";
+    name = "tom barrett";
   };
   spease = {
     email = "peasteven@gmail.com";
