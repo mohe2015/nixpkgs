@@ -2175,6 +2175,8 @@ self: super: with self; {
 
   coreapi = callPackage ../development/python-modules/coreapi { };
 
+  coredis = callPackage ../development/python-modules/coredis { };
+
   coreschema = callPackage ../development/python-modules/coreschema { };
 
   cornice = callPackage ../development/python-modules/cornice { };
@@ -4456,6 +4458,8 @@ self: super: with self; {
 
   gpt-2-simple = callPackage ../development/python-modules/gpt-2-simple { };
 
+  gptcache = callPackage ../development/python-modules/gptcache { };
+
   gql = callPackage ../development/python-modules/gql { };
 
   grad-cam = callPackage ../development/python-modules/grad-cam { };
@@ -4580,6 +4584,8 @@ self: super: with self; {
   guestfs = callPackage ../development/python-modules/guestfs { };
 
   gudhi = callPackage ../development/python-modules/gudhi { };
+
+  guidance = callPackage ../development/python-modules/guidance { };
 
   gumath = callPackage ../development/python-modules/gumath { };
 
@@ -4763,6 +4769,10 @@ self: super: with self; {
   hledger-utils = callPackage ../development/python-modules/hledger-utils { };
 
   hlk-sw16 = callPackage ../development/python-modules/hlk-sw16 { };
+
+  hnswlib = callPackage ../development/python-modules/hnswlib {
+    inherit (pkgs) hnswlib;
+  };
 
   hmmlearn = callPackage ../development/python-modules/hmmlearn { };
 
@@ -5100,6 +5110,8 @@ self: super: with self; {
   inscriptis = callPackage ../development/python-modules/inscriptis { };
 
   insegel = callPackage ../development/python-modules/insegel { };
+
+  insightface = callPackage ../development/python-modules/insightface { };
 
   installer = callPackage ../development/python-modules/installer { };
 
@@ -7213,6 +7225,8 @@ self: super: with self; {
   py-eth-sig-utils = callPackage ../development/python-modules/py-eth-sig-utils { };
 
   py-expression-eval = callPackage ../development/python-modules/py-expression-eval { };
+
+  py-radix-sr = callPackage ../development/python-modules/py-radix-sr { };
 
   nwdiag = callPackage ../development/python-modules/nwdiag { };
 
@@ -12848,6 +12862,8 @@ self: super: with self; {
   ttp = callPackage ../development/python-modules/ttp { };
 
   ttp-templates = callPackage ../development/python-modules/ttp-templates { };
+
+  ttstokenizer = callPackage ../development/python-modules/ttstokenizer { };
 
   tubes = callPackage ../development/python-modules/tubes { };
 
