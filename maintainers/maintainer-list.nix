@@ -11721,6 +11721,12 @@
     githubId = 38578268;
     name = "Morgan Wolfe";
   };
+  mxkrsv = {
+    email = "mxkrsv@disroot.org";
+    github = "mxkrsv";
+    githubId = 59313755;
+    name = "Maxim Karasev";
+  };
   myaats = {
     email = "mats@mats.sh";
     github = "Myaats";
@@ -13481,6 +13487,12 @@
     github = "pogobanane";
     githubId = 38314551;
     name = "Peter Okelmann";
+  };
+  pokon548 = {
+    email = "nix@bukn.uk";
+    github = "pokon548";
+    githubId = 65808665;
+    name = "Bu Kun";
   };
   polarmutex = {
     email = "brian@brianryall.xyz";
@@ -18719,6 +18731,12 @@
     matrix = "@zeri:matrix.org";
     github = "zeri42";
     githubId = 68825133;
+  };
+  zestsystem = {
+    email = "mk337337@gmail.com";
+    github = "zestsystem";
+    githubId = 39456023;
+    name = "Mike Yim";
   };
   zfnmxt = {
     name = "zfnmxt";
