@@ -19,8 +19,10 @@
 , perl
 , fakeroot
 , util-linux
+, vmTools
 }:
 
+vmTools.runInLinuxVM (
 let
   sdClosureInfo = pkgs.buildPackages.closureInfo { rootPaths = storePaths; };
 in
@@ -70,12 +72,15 @@ pkgs.stdenv.mkDerivation {
       faketime -f "1970-01-01 00:00:01" fakeroot mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup $img
 
       mountPoint=$(mktemp -d)
-      fakeroot mount -o compress-force=zstd $img $mountPoint
+
+      mount -o compress-force=zstd $img $mountPoint
 
       cp -r ./rootImage/ $mountPoint
 
       btrfs filesystem du $mountPoint
       btrfs filesystem usage $mountPoint
+
+      # TODO duperemove
 
       fakeroot umount $mountPoint
 
@@ -89,4 +94,4 @@ pkgs.stdenv.mkDerivation {
         zstd -v --no-progress ./$img -o $out
       fi
     '';
-}
+})
