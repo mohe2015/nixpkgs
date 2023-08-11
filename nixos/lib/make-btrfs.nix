@@ -14,7 +14,7 @@
 , populateImageCommands ? ""
 , volumeLabel
 , uuid ? "44444444-4444-4444-8888-888888888888"
-, e2fsprogs
+, btrfs-progs
 , libfaketime
 , perl
 , fakeroot
@@ -26,7 +26,7 @@ in
 pkgs.stdenv.mkDerivation {
   name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
-  nativeBuildInputs = [ e2fsprogs.bin libfaketime perl fakeroot ]
+  nativeBuildInputs = [ btrfs-progs libfaketime perl fakeroot ]
   ++ lib.optional compressImage zstd;
 
   buildCommand =
@@ -64,28 +64,24 @@ pkgs.stdenv.mkDerivation {
 
       truncate -s $bytes $img
 
-      faketime -f "1970-01-01 00:00:01" fakeroot mkfs.btrfs -L ${volumeLabel} -U ${uuid} -d ./rootImage $img
+      # TODO FIXME btrfs compression
+      # --rootdir ./rootImage --shrink
+      faketime -f "1970-01-01 00:00:01" fakeroot mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup $img
 
-      export EXT2FS_NO_MTAB_OK=yes
-      # I have ended up with corrupted images sometimes, I suspect that happens when the build machine's disk gets full during the build.
-      if ! fsck.btrfs -n -f $img; then
-        echo "--- Fsck failed for BTRFS image of $bytes bytes (numInodes=$numInodes, numDataBlocks=$numDataBlocks) ---"
-        cat errorlog
-        return 1
-      fi
+      mountPoint=/mnt
+      mkdir $mountPoint
+      fakeroot mount -o compress-force=zstd $img $mountPoint
 
-      # We may want to shrink the file system and resize the image to
-      # get rid of the unnecessary slack here--but see
-      # https://github.com/NixOS/nixpkgs/issues/125121 for caveats.
+      cp -r ./rootImage/ $mountPoint
 
-      # shrink to fit
-      resize2fs -M $img
+      btrfs filesystem du $mountPoint
+      btrfs filesystem usage $mountPoint
 
-      # Add 16 MebiByte to the current_size
-      new_size=$(dumpe2fs -h $img | awk -F: \
-        '/Block count/{count=$2} /Block size/{size=$2} END{print (count*size+16*2**20)/size}')
+      fakeroot umount $mountPoint
 
-      resize2fs $img $new_size
+      #truncate -s +16M $img
+
+      #btrfs filesystem resize max $img
 
       if [ ${builtins.toString compressImage} ]; then
         echo "Compressing image"
