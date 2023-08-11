@@ -18,6 +18,7 @@
 , libfaketime
 , perl
 , fakeroot
+, util-linux
 }:
 
 let
@@ -26,7 +27,7 @@ in
 pkgs.stdenv.mkDerivation {
   name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
-  nativeBuildInputs = [ btrfs-progs libfaketime perl fakeroot ]
+  nativeBuildInputs = [ btrfs-progs libfaketime perl fakeroot util-linux ]
   ++ lib.optional compressImage zstd;
 
   buildCommand =
@@ -69,7 +70,6 @@ pkgs.stdenv.mkDerivation {
       faketime -f "1970-01-01 00:00:01" fakeroot mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup $img
 
       mountPoint=$(mktemp -d)
-      fakeroot mkdir $mountPoint
       fakeroot mount -o compress-force=zstd $img $mountPoint
 
       cp -r ./rootImage/ $mountPoint
@@ -79,6 +79,7 @@ pkgs.stdenv.mkDerivation {
 
       fakeroot umount $mountPoint
 
+      # rather use the unallocated value
       # sudo btrfs filesystem usage -b /mountpoint
       #btrfs filesystem resize max $img
       #truncate -s +16M $img
