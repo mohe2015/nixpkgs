@@ -68,8 +68,8 @@ pkgs.stdenv.mkDerivation {
       # --rootdir ./rootImage --shrink
       faketime -f "1970-01-01 00:00:01" fakeroot mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup $img
 
-      mountPoint=/mnt
-      mkdir $mountPoint
+      mountPoint=$(mktemp -d)
+      fakeroot mkdir $mountPoint
       fakeroot mount -o compress-force=zstd $img $mountPoint
 
       cp -r ./rootImage/ $mountPoint
@@ -79,9 +79,9 @@ pkgs.stdenv.mkDerivation {
 
       fakeroot umount $mountPoint
 
-      #truncate -s +16M $img
-
+      # sudo btrfs filesystem usage -b /mountpoint
       #btrfs filesystem resize max $img
+      #truncate -s +16M $img
 
       if [ ${builtins.toString compressImage} ]; then
         echo "Compressing image"
