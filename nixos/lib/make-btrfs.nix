@@ -33,7 +33,16 @@ pkgsMySystem.runCommand "test" {
 
   memSize = 1024;
 
-  preVM = pkgsMySystem.vmTools.createEmptyImage { size = 4096; fullName = "test"; };
+  preVM = ''
+    set -ex
+    touch $out
+    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f qcow2 $out 4096M
+    diskImage=$out
+  '';
+
+  postVM = ''
+    ls -la $out
+  '';
 }
   
     ''
