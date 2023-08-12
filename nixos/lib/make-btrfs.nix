@@ -38,7 +38,7 @@ pkgsMySystem.runCommand "test" {
   preVM = ''
     set -ex
     touch $out
-    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 2048M
+    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 8192M
   '';
 
   postVM = ''
