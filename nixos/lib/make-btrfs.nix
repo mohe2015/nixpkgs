@@ -25,7 +25,7 @@ let
   pkgsMySystem = (import ./../.. { system = "x86_64-linux"; });
 in
 pkgsMySystem.vmTools.runInLinuxVM (
-pkgsMySystem.stdenv.mkDerivation {
+pkgsMySystem.runCommand "test" {
   name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
   nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
@@ -34,8 +34,8 @@ pkgsMySystem.stdenv.mkDerivation {
   memSize = 1024;
 
   preVM = pkgsMySystem.vmTools.createEmptyImage { size = 4096; fullName = "test"; };
-
-  buildCommand =
+}
+  
     ''
       set -ex
       mknod /dev/btrfs-control c 10 234
@@ -69,5 +69,6 @@ pkgsMySystem.stdenv.mkDerivation {
       # TODO duperemove
 
       umount /mnt
-    '';
-})
+    ''
+
+)
