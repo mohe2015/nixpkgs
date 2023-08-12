@@ -19,11 +19,13 @@
 
 # https://discourse.nixos.org/t/run-nixos-aarch64-vm-on-x86-fails-even-with-binfmt/23124/4
 # double emulation unfortunately
-pkgsBuildBuild.vmTools.runInLinuxVM (
+# https://github.com/NixOS/nixpkgs/blob/aefe566f73164776003ef5ef78003b5f9ccd7c4f/pkgs/top-level/stage.nix#L27
 let
   sdClosureInfo = pkgs.buildPackages.closureInfo { rootPaths = storePaths; };
+  pkgsMySystem = (import ./../.. { system = "x86_64-linux"; });
 in
-pkgsBuildBuild.stdenv.mkDerivation {
+pkgsMySystem.vmTools.runInLinuxVM (
+pkgsMySystem.stdenv.mkDerivation {
   name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
   nativeBuildInputs = with pkgsBuildBuild; [ btrfs-progs libfaketime perl fakeroot util-linux ]
