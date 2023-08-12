@@ -31,7 +31,7 @@ pkgsMySystem.runCommand "test" {
   nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
   ++ lib.optional compressImage zstd;
 
-  QEMU_OPTS = "-drive file=$out,if=raw,cache=unsafe,werror=report";
+  QEMU_OPTS = "-drive file=$out,format=raw,if=virtio,cache=unsafe,werror=report";
 
   memSize = 1024;
 

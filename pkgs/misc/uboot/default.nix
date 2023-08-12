@@ -466,7 +466,8 @@ in {
   ubootRaspberryPi4_64bit = buildUBoot {
     defconfig = "rpi_4_defconfig";
     extraConfig = ''
-      FS_BTRFS=y
+      CONFIG_CMD_BTRFS=y
+      CONFIG_XXHASH=y
     '';
     extraMeta.platforms = ["aarch64-linux"];
     filesToInstall = ["u-boot.bin"];
