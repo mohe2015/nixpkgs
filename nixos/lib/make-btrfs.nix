@@ -50,7 +50,12 @@ pkgsMySystem.runCommand "test" {
       mknod /dev/btrfs-control c 10 234
       mkdir /mnt
       mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup /dev/${pkgsMySystem.vmTools.hd}
-      mount -o compress-force=zstd /dev/${pkgsMySystem.vmTools.hd} /mnt
+      # compress-force=zstd     Used:  870.09MiB
+      # compress-force=zstd:15  Used:  839.05MiB
+      # compress-force=zlib:9   Used:  860.03MiB
+      # compress-force=lzo      Used: 1017.20MiB
+      # none                    Used:    1.44GiB
+      mount /dev/${pkgsMySystem.vmTools.hd} /mnt
 
       (
       mkdir -p ./files
