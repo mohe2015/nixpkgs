@@ -4,32 +4,29 @@
 # generated image is sized to only fit its contents, with the expectation
 # that a script resizes the filesystem at boot time.
 { pkgs
+, pkgsBuildBuild
 , lib
 # List of derivations to be included
 , storePaths
 # Whether or not to compress the resulting image with zstd
-, compressImage ? false, zstd
+, compressImage ? false
 # Shell commands to populate the ./files directory.
 # All files in that directory are copied to the root of the FS.
 , populateImageCommands ? ""
 , volumeLabel
 , uuid ? "44444444-4444-4444-8888-888888888888"
-, btrfs-progs
-, libfaketime
-, perl
-, fakeroot
-, util-linux
-, vmTools
 }:
 
-vmTools.runInLinuxVM (
+# https://discourse.nixos.org/t/run-nixos-aarch64-vm-on-x86-fails-even-with-binfmt/23124/4
+# double emulation unfortunately
+pkgsBuildBuild.vmTools.runInLinuxVM (
 let
   sdClosureInfo = pkgs.buildPackages.closureInfo { rootPaths = storePaths; };
 in
-pkgs.stdenv.mkDerivation {
+pkgsBuildBuild.stdenv.mkDerivation {
   name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
-  nativeBuildInputs = [ btrfs-progs libfaketime perl fakeroot util-linux ]
+  nativeBuildInputs = with pkgsBuildBuild; [ btrfs-progs libfaketime perl fakeroot util-linux ]
   ++ lib.optional compressImage zstd;
 
   buildCommand =

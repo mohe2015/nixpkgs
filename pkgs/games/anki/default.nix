@@ -157,39 +157,49 @@ python3.pkgs.buildPythonApplication {
     # names, without version numbers, of their python dependencies. The hope is
     # that nixpkgs versions are "close enough"
     # I then removed the ones the check phase failed on (pythonCatchConflictsPhase)
-    beautifulsoup4
-    certifi
-    charset-normalizer
-    click
-    colorama
-    decorator
-    distro
-    flask
-    flask-cors
-    idna
-    importlib-metadata
-    itsdangerous
-    jinja2
-    jsonschema
-    markdown
-    markupsafe
-    orjson
-    pep517
-    python3.pkgs.protobuf
-    pyparsing
-    pyqt6
-    pyqt6-sip
-    pyqt6-webengine
-    pyrsistent
-    pysocks
-    requests
-    send2trash
-    six
-    soupsieve
-    urllib3
-    waitress
-    werkzeug
-    zipp
+    attrs
+beautifulsoup4
+blinker
+build
+certifi
+charset-normalizer
+click
+colorama
+decorator
+distro
+flask
+flask-cors
+idna
+importlib-metadata
+itsdangerous
+jinja2
+jsonschema
+markdown
+markupsafe
+orjson
+packaging
+pip
+pip-tools
+python3.pkgs.protobuf
+pyproject-hooks
+pyqt6
+#pyqt6-qt6
+pyqt6-sip
+pyqt6-webengine
+#pyqt6-webengine-qt6
+pyrsistent
+pysocks
+requests
+send2trash
+setuptools
+six
+soupsieve
+tomli
+urllib3
+waitress
+werkzeug
+wheel
+zipp
   ] ++ lib.optionals stdenv.isDarwin [
     AVKit
     CoreAudio
