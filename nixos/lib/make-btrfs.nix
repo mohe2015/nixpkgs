@@ -36,7 +36,7 @@ pkgsMySystem.runCommand "test" {
   preVM = ''
     set -ex
     touch $out
-    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 2048M
+    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 1024M
     diskImage=$out
   '';
 
@@ -51,11 +51,11 @@ pkgsMySystem.runCommand "test" {
       mkdir /mnt
       mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup /dev/${pkgsMySystem.vmTools.hd}
       # compress-force=zstd     Used:  870.09MiB
-      # compress-force=zstd:15  Used:  839.05MiB
+      # compress-force=zstd:15  Used:  839.05MiB 806.78MiB
       # compress-force=zlib:9   Used:  860.03MiB
       # compress-force=lzo      Used: 1017.20MiB
-      # none                    Used:    1.44GiB
-      mount /dev/${pkgsMySystem.vmTools.hd} /mnt
+      # none                    Used:    1.44GiB 1.33GiB
+      mount -o compress-force=zstd:15 /dev/${pkgsMySystem.vmTools.hd} /mnt
 
       (
       mkdir -p ./files
@@ -79,7 +79,9 @@ pkgsMySystem.runCommand "test" {
 
       btrfs filesystem usage /mnt
 
-      # TODO duperemove
+      ${pkgsMySystem.duperemove}/bin/duperemove -q -r -d /mnt
+
+      btrfs filesystem usage /mnt
 
       umount /mnt
     ''
