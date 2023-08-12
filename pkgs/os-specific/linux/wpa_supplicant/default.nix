@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchgit, openssl, pkg-config, libnl
+{ lib, stdenv, fetchurl, openssl, pkg-config, libnl
 , nixosTests, wpa_supplicant_gui
 , dbusSupport ? !stdenv.hostPlatform.isStatic, dbus
 , withReadline ? true, readline
@@ -12,15 +12,14 @@ stdenv.mkDerivation rec {
 
   pname = "wpa_supplicant";
 
-  src = fetchgit {
-    url = "git://w1.fi/srv/git/hostap.git";
-    rev = "faee8b99e9287af510f9bbedbe17d8c422330bc7";
-    sha256 = "sha256-FJKIfj1gImp8CIT/vGkWjuROR8tmO5iiCbbIqCxTi5A=";
+  src = fetchurl {
+    url = "https://w1.fi/releases/${pname}-${version}.tar.gz";
+    sha256 = "sha256-IN965RVLODA1X4q0JpEjqHr/3qWf50/pKSqR0Nfhey8=";
   };
 
   patches = [
     # Fix a bug when using two config files
-    #./Use-unique-IDs-for-networks-and-credentials.patch
+    ./Use-unique-IDs-for-networks-and-credentials.patch
   ] ++ lib.optionals readOnlyModeSSIDs [
     # Allow read-only networks
     ./0001-Implement-read-only-mode-for-ssids.patch
@@ -92,9 +91,9 @@ stdenv.mkDerivation rec {
   '');
 
   preBuild = ''
-    #for manpage in wpa_supplicant/doc/docbook/wpa_supplicant.conf* ; do
-    #  substituteInPlace "$manpage" --replace /usr/share/doc $out/share/doc
-    #done
+    for manpage in wpa_supplicant/doc/docbook/wpa_supplicant.conf* ; do
+      substituteInPlace "$manpage" --replace /usr/share/doc $out/share/doc
+    done
     cd wpa_supplicant
     cp -v defconfig .config
     echo "$extraConfig" >> .config
@@ -113,9 +112,9 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ pkg-config ];
 
   postInstall = ''
-    #mkdir -p $out/share/man/man5 $out/share/man/man8
-    #cp -v "doc/docbook/"*.5 $out/share/man/man5/
-    #cp -v "doc/docbook/"*.8 $out/share/man/man8/
+    mkdir -p $out/share/man/man5 $out/share/man/man8
+    cp -v "doc/docbook/"*.5 $out/share/man/man5/
+    cp -v "doc/docbook/"*.8 $out/share/man/man8/
   ''
   + lib.optionalString dbusSupport ''
     mkdir -p $out/share/dbus-1/system.d $out/share/dbus-1/system-services $out/etc/systemd/system
@@ -125,7 +124,7 @@ stdenv.mkDerivation rec {
     cp -v "systemd/"*.service $out/etc/systemd/system
   ''
   + ''
-    #rm $out/share/man/man8/wpa_priv.8
+    rm $out/share/man/man8/wpa_priv.8
     install -Dm444 wpa_supplicant.conf $out/share/doc/wpa_supplicant/wpa_supplicant.conf.example
   '';
 
