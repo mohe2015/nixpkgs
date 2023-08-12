@@ -31,13 +31,14 @@ pkgsMySystem.runCommand "test" {
   nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
   ++ lib.optional compressImage zstd;
 
+  QEMU_OPTS = "-drive file=$out,if=raw,cache=unsafe,werror=report";
+
   memSize = 1024;
 
   preVM = ''
     set -ex
     touch $out
-    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 1024M
-    diskImage=$out
+    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 2048M
   '';
 
   postVM = ''
