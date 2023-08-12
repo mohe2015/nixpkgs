@@ -36,7 +36,7 @@ pkgsMySystem.runCommand "test" {
   preVM = ''
     set -ex
     touch $out
-    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f qcow2 $out 4096M
+    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 2048M
     diskImage=$out
   '';
 
@@ -72,7 +72,6 @@ pkgsMySystem.runCommand "test" {
       # Also include a manifest of the closures in a format suitable for nix-store --load-db
       cp ${sdClosureInfo}/registration /mnt/nix-path-registration
 
-      btrfs filesystem du /mnt
       btrfs filesystem usage /mnt
 
       # TODO duperemove
