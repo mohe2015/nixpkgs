@@ -31,13 +31,17 @@ pkgsMySystem.stdenv.mkDerivation {
   nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
   ++ lib.optional compressImage zstd;
 
+  memSize = 1024;
+
   preVM = pkgsMySystem.vmTools.createEmptyImage { size = 4096; fullName = "test"; };
 
   buildCommand =
     ''
+      set -ex
+      mknod /dev/btrfs-control c 10 234
       mkdir /mnt
       mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup /dev/${pkgsMySystem.vmTools.hd}
-      mount -o compress-force=zstd /dev/${pkgsMySystem.vmTools.hd} /tmp
+      mount -o compress-force=zstd /dev/${pkgsMySystem.vmTools.hd} /mnt
 
       (
       mkdir -p ./files
