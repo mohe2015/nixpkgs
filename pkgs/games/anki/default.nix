@@ -13,7 +13,7 @@
 , nodejs-slim
 , protobuf
 , python3
-, qt5
+, qt6
 , rsync
 , rustPlatform
 , writeShellScriptBin
@@ -140,19 +140,19 @@ python3.pkgs.buildPythonApplication {
     cargo
     rustPlatform.cargoSetupHook
     ninja
-    qt5.wrapQtAppsHook
+    qt6.wrapQtAppsHook
     rsync
   ] ++ lib.optional stdenv.isDarwin swift;
   nativeCheckInputs = with python3.pkgs; [ pytest mock astroid  ];
 
   buildInputs = [
-    qt5.qtbase
-  ] ++ lib.optional stdenv.isLinux qt5.qtwayland;
+    qt6.qtbase
+  ] ++ lib.optional stdenv.isLinux qt6.qtwayland;
   propagatedBuildInputs = with python3.pkgs; [
     # This rather long list came from running:
-    # grep --no-filename -oE "^[^ =]*" python/requirements.base.txt python/requirements.bundle.txt python/requirements.qt5_15.txt | \
-    #    sort | uniq | grep -v "^#$"
-    # in their repo at anki git tag 2.1.61
+    #    grep --no-filename -oE "^[^ =]*" python/{requirements.base.txt,requirements.bundle.txt,requirements.qt6_4.txt} | \
+    #      sort | uniq | grep -v "^#$"
+    # in their repo at the git tag for this version
     # There's probably a more elegant way, but the above extracted all the
     # names, without version numbers, of their python dependencies. The hope is
     # that nixpkgs versions are "close enough"
@@ -177,16 +177,15 @@ python3.pkgs.buildPythonApplication {
     pep517
     python3.pkgs.protobuf
     pyparsing
-    pyqt5
-    pyqt5_sip
-    pyqtwebengine
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
     pyrsistent
     pysocks
     requests
     send2trash
     six
     soupsieve
-    tomli
     urllib3
     waitress
     werkzeug
