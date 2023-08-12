@@ -28,69 +28,42 @@ pkgsMySystem.vmTools.runInLinuxVM (
 pkgsMySystem.stdenv.mkDerivation {
   name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
-  nativeBuildInputs = with pkgsBuildBuild; [ btrfs-progs libfaketime perl fakeroot util-linux ]
+  nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
   ++ lib.optional compressImage zstd;
+
+  preVM = pkgsMySystem.vmTools.createEmptyImage { size = 4096; fullName = "test"; };
 
   buildCommand =
     ''
-      ${if compressImage then "img=temp.img" else "img=$out"}
+      mkdir /mnt
+      mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup /dev/${pkgsMySystem.vmTools.hd}
+      mount -o compress-force=zstd /dev/${pkgsMySystem.vmTools.hd} /tmp
+
       (
       mkdir -p ./files
-      ${populateImageCommands}
+      ${populateImageCommands} # will probably populate # ./files/boot
       )
 
-      echo "Preparing store paths for image..."
+      mkdir -p /mnt/nix/store
 
-      # Create nix/store before copying path
-      mkdir -p ./rootImage/nix/store
-
-      xargs -I % cp -a --reflink=auto % -t ./rootImage/nix/store/ < ${sdClosureInfo}/store-paths
+      xargs -I % cp -a --reflink=auto % -t /mnt/nix/store/ < ${sdClosureInfo}/store-paths
       (
         GLOBIGNORE=".:.."
         shopt -u dotglob
 
         for f in ./files/*; do
-            cp -a --reflink=auto -t ./rootImage/ "$f"
+            cp -a --reflink=auto -t /mnt/ "$f"
         done
       )
 
       # Also include a manifest of the closures in a format suitable for nix-store --load-db
-      cp ${sdClosureInfo}/registration ./rootImage/nix-path-registration
+      cp ${sdClosureInfo}/registration /mnt/nix-path-registration
 
-      # Make a crude approximation of the size of the target image.
-      # If the script starts failing, increase the fudge factors here.
-      numInodes=$(find ./rootImage | wc -l)
-      numDataBlocks=$(du -s -c -B 4096 --apparent-size ./rootImage | tail -1 | awk '{ print int($1 * 1.10) }')
-      bytes=$((2 * 4096 * $numInodes + 4096 * $numDataBlocks))
-      echo "Creating an BTRFS image of $bytes bytes (numInodes=$numInodes, numDataBlocks=$numDataBlocks)"
-
-      truncate -s $bytes $img
-
-      # TODO FIXME btrfs compression
-      # --rootdir ./rootImage --shrink
-      faketime -f "1970-01-01 00:00:01" fakeroot mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup $img
-
-      mountPoint=$(mktemp -d)
-
-      mount -o compress-force=zstd $img $mountPoint
-
-      cp -r ./rootImage/ $mountPoint
-
-      btrfs filesystem du $mountPoint
-      btrfs filesystem usage $mountPoint
+      btrfs filesystem du /mnt
+      btrfs filesystem usage /mnt
 
       # TODO duperemove
 
-      fakeroot umount $mountPoint
-
-      # rather use the unallocated value
-      # sudo btrfs filesystem usage -b /mountpoint
-      #btrfs filesystem resize max $img
-      #truncate -s +16M $img
-
-      if [ ${builtins.toString compressImage} ]; then
-        echo "Compressing image"
-        zstd -v --no-progress ./$img -o $out
-      fi
+      umount /mnt
     '';
 })
