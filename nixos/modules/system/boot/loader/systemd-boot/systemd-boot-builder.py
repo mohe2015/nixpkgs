@@ -157,6 +157,8 @@ def mkdir_p(path: str) -> None:
 
 
 def get_generations(profile: Optional[str] = None) -> List[SystemIdentifier]:
+    if os.getenv("NO_ROOT") == "1":
+        return []
     gen_list = subprocess.check_output([
         "@nix@/bin/nix-env",
         "--list-generations",
