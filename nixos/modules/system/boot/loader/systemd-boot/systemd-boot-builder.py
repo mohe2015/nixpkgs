@@ -223,19 +223,7 @@ def main() -> None:
     parser.add_argument('default_config', metavar='DEFAULT-CONFIG', help='The default @distroName@ config to boot')
     args = parser.parse_args()
 
-    try:
-        with open("/etc/machine-id") as machine_file:
-            machine_id = machine_file.readlines()[0]
-    except IOError as e:
-        if e.errno != errno.ENOENT:
-            raise
-        # Since systemd version 232 a machine ID is required and it might not
-        # be there on newly installed systems, so let's generate one so that
-        # bootctl can find it and we can also pass it to write_entry() later.
-        cmd = ["@systemd@/bin/systemd-machine-id-setup", "--print"]
-        machine_id = subprocess.run(
-          cmd, text=True, check=True, stdout=subprocess.PIPE
-        ).stdout.rstrip()
+    machine_id = "magic"
 
     if os.getenv("NIXOS_INSTALL_GRUB") == "1":
         warnings.warn("NIXOS_INSTALL_GRUB env var deprecated, use NIXOS_INSTALL_BOOTLOADER", DeprecationWarning)

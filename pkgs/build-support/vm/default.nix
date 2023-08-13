@@ -248,8 +248,6 @@ rec {
     ${qemuCommand}
     EOF
 
-    mkdir -p -m 0700 $out
-
     chmod +x ./run-vm
     source ./run-vm
 
