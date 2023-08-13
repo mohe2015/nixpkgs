@@ -65,13 +65,14 @@ pkgsMySystem.runCommand "test" {
 
       mkdir -p /mnt/nix/store
 
-      xargs -I % cp -a --reflink=auto % -t /mnt/nix/store/ < ${sdClosureInfo}/store-paths
+      xargs -I % cp -dR % -t /mnt/nix/store/ < ${sdClosureInfo}/store-paths
+      ls -la  /mnt/nix/store/
       (
         GLOBIGNORE=".:.."
         shopt -u dotglob
 
         for f in ./files/*; do
-            cp -a --reflink=auto -t /mnt/ "$f"
+            cp -a -t /mnt/ "$f"
         done
       )
 
