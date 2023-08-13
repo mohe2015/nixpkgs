@@ -57,7 +57,7 @@ in
 
     firmwarePartitionOffset = mkOption {
       type = types.int;
-      default = 8;
+      default = 1;
       description = lib.mdDoc ''
         Gap in front of the /boot/firmware partition, in mebibytes (1024×1024
         bytes).
@@ -100,7 +100,7 @@ in
     firmwareSize = mkOption {
       type = types.int;
       # As of 2019-08-18 the Raspberry pi firmware + u-boot takes ~18MiB
-      default = 30;
+      default = 100;
       description = lib.mdDoc ''
         Size of the /boot/firmware partition, in megabytes.
       '';
@@ -136,7 +136,7 @@ in
 
     compressImage = mkOption {
       type = types.bool;
-      default = true;
+      default = false;
       description = lib.mdDoc ''
         Whether the SD image should be compressed using
         {command}`zstd`.
@@ -154,7 +154,7 @@ in
 
   config = {
     fileSystems = {
-      "/boot/firmware" = {
+      "/boot/firmware" = mkIf (config.sdImage.firmwareSize != 0) {
         device = "/dev/disk/by-label/${config.sdImage.firmwarePartitionName}";
         fsType = "vfat";
         # Alternatively, this could be removed from the configuration.
@@ -210,18 +210,22 @@ in
         # type=b is 'W95 FAT32', type=83 is 'Linux'.
         # The "bootable" partition is where u-boot will look file for the bootloader
         # information (dtbs, extlinux.conf file).
+        # Failed to add #1 partition: Invalid argument
+        # https://man7.org/linux/man-pages/man8/sfdisk.8.html
         sfdisk $img <<EOF
-            label: dos
+            label: gpt
+            ${optionalString (config.sdImage.firmwareSize != 0) ''
             label-id: ${config.sdImage.firmwarePartitionID}
-
-            start=''${gap}M, size=$firmwareSizeBlocks, type=b
-            start=$((gap + ${toString config.sdImage.firmwareSize}))M, type=83, bootable
+            start=''${gap}M, size=$firmwareSizeBlocks, type=uefi
+            ''}
+            start=$((gap + ${toString config.sdImage.firmwareSize}))M, type=linux
         EOF
 
         # Copy the rootfs into the SD image
         eval $(partx $img -o START,SECTORS --nr 2 --pairs)
         dd conv=notrunc if=$root_fs of=$img seek=$START count=$SECTORS
 
+          ${optionalString (config.sdImage.firmwareSize != 0) ''
         # Create a FAT32 /boot/firmware partition of suitable size into firmware_part.img
         eval $(partx $img -o START,SECTORS --nr 1 --pairs)
         truncate -s $((SECTORS * 512)) firmware_part.img
@@ -247,6 +251,7 @@ in
         # Verify the FAT partition before copying it.
         fsck.vfat -vn firmware_part.img
         dd conv=notrunc if=firmware_part.img of=$img seek=$START count=$SECTORS
+        ''}
 
         ${config.sdImage.postBuildCommands}
 
