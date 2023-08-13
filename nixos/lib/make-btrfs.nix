@@ -56,7 +56,7 @@ pkgsMySystem.runCommand "test" {
       # compress-force=zlib:9   Used:  860.03MiB
       # compress-force=lzo      Used: 1017.20MiB
       # none                    Used:    1.44GiB 1.33GiB
-      mount -o compress-force=zstd:15 /dev/${pkgsMySystem.vmTools.hd} /mnt
+      mount -o compress-force=zstd /dev/${pkgsMySystem.vmTools.hd} /mnt
 
       (
       mkdir -p ./files
@@ -80,9 +80,9 @@ pkgsMySystem.runCommand "test" {
 
       btrfs filesystem usage /mnt
 
-      ${pkgsMySystem.duperemove}/bin/duperemove -q -r -d /mnt
+      #${pkgsMySystem.duperemove}/bin/duperemove -q -r -d /mnt
 
-      btrfs filesystem usage /mnt
+      #btrfs filesystem usage /mnt
 
       umount /mnt
     ''
