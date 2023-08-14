@@ -31,9 +31,9 @@ def copy_if_not_exists(source: str, dest: str) -> None:
 
 def generation_dir(profile: Optional[str], generation: int) -> str:
     if profile:
-        return "/nix/var/nix/profiles/system-profiles/%s-%d-link" % (profile, generation)
+        return ("/build" if os.getenv("NO_ROOT") == "1" else "") + "/nix/var/nix/profiles/system-profiles/%s-%d-link" % (profile, generation)
     else:
-        return "/nix/var/nix/profiles/system-%d-link" % (generation)
+        return ("/build" if os.getenv("NO_ROOT") == "1" else "") + "/nix/var/nix/profiles/system-%d-link" % (generation)
 
 def system_dir(profile: Optional[str], generation: int, specialisation: Optional[str]) -> str:
     d = generation_dir(profile, generation)
@@ -157,13 +157,11 @@ def mkdir_p(path: str) -> None:
 
 
 def get_generations(profile: Optional[str] = None) -> List[SystemIdentifier]:
-    if os.getenv("NO_ROOT") == "1":
-        return []
     gen_list = subprocess.check_output([
         "@nix@/bin/nix-env",
         "--list-generations",
         "-p",
-        "/nix/var/nix/profiles/%s" % ("system-profiles/" + profile if profile else "system"),
+        ("/build" if os.getenv("NO_ROOT") == "1" else "") + "/nix/var/nix/profiles/%s" % ("system-profiles/" + profile if profile else "system"),
         "--option", "build-users-group", ""],
         universal_newlines=True)
     gen_lines = gen_list.split('\n')
@@ -178,6 +176,7 @@ def get_generations(profile: Optional[str] = None) -> List[SystemIdentifier]:
         )
         for line in gen_lines
     ]
+    print(configurations)
     return configurations[-configurationLimit:]
 
 
@@ -213,9 +212,9 @@ def remove_old_entries(gens: List[SystemIdentifier]) -> None:
 
 
 def get_profiles() -> List[str]:
-    if os.path.isdir("/nix/var/nix/profiles/system-profiles/"):
+    if os.path.isdir(("/build" if os.getenv("NO_ROOT") == "1" else "") + "/nix/var/nix/profiles/system-profiles/"):
         return [x
-            for x in os.listdir("/nix/var/nix/profiles/system-profiles/")
+            for x in os.listdir(("/build" if os.getenv("NO_ROOT") == "1" else "") + "/nix/var/nix/profiles/system-profiles/")
             if not x.endswith("-link")]
     else:
         return []
@@ -284,6 +283,7 @@ def main() -> None:
         gens += get_generations(profile)
     remove_old_entries(gens)
     for gen in gens:
+        print(gen)
         try:
             is_default = os.path.dirname(profile_path(*gen, "init")) == args.default_config
             write_entry(*gen, machine_id, current=is_default)
