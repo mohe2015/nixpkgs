@@ -81,6 +81,7 @@ let
     { cc, fetchurl, extraPath ? [], overrides ? (self: super: { }), extraNativeBuildInputs ? [] }:
 
     import ../generic {
+      emulatingPlatform = localSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;

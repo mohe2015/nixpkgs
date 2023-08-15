@@ -39,6 +39,9 @@ argsStdenv@{ name ? "stdenv", preHook ? "", initialPath
   ## current one.
   ##
 
+, # The platform that is emulating the current build
+  emulatingPlatform
+
 , # The platform on which packages are built. Consists of `system`, a
   # string (e.g.,`i686-linux') identifying the most import attributes of the
   # build platform, and `platform` a set of other details.

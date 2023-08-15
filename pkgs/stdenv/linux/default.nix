@@ -160,6 +160,7 @@ let
 
       thisStdenv = import ../generic {
         name = "${name}-stdenv-linux";
+        emulatingPlatform = localSystem;
         buildPlatform = localSystem;
         hostPlatform = localSystem;
         targetPlatform = localSystem;
@@ -599,6 +600,7 @@ in
     stdenv = import ../generic rec {
       name = "stdenv-linux";
 
+      emulatingPlatform = localSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;

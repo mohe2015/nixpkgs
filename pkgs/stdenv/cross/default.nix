@@ -45,6 +45,7 @@ in lib.init bootStages ++ [
     overlays = overlays ++ crossOverlays;
     selfBuild = false;
     stdenv = adaptStdenv (buildPackages.stdenv.override (old: rec {
+      emulatingPlatform = localSystem;
       buildPlatform = localSystem;
       hostPlatform = crossSystem;
       targetPlatform = crossSystem;

@@ -153,6 +153,7 @@ let
       thisStdenv = import ../generic {
         name = "${name}-stdenv-darwin";
 
+        emulatingPlatform = localSystem;
         buildPlatform = localSystem;
         hostPlatform = localSystem;
         targetPlatform = localSystem;
@@ -1220,6 +1221,7 @@ in
     stdenv = import ../generic {
       name = "stdenv-darwin";
 
+      emulatingPlatform = localSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;

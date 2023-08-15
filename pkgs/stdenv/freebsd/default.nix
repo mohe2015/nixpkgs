@@ -202,6 +202,7 @@ in
 
     stdenv = import ../generic {
       name = "stdenv-freebsd-boot-1";
+      emulatingPlatform = localSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;

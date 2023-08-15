@@ -6,12 +6,12 @@
 { pkgs
 , pkgsBuildBuild
 , lib
-# List of derivations to be included
+  # List of derivations to be included
 , storePaths
-# Whether or not to compress the resulting image with zstd
+  # Whether or not to compress the resulting image with zstd
 , compressImage ? false
-# Shell commands to populate the ./files directory.
-# All files in that directory are copied to the root of the FS.
+  # Shell commands to populate the ./files directory.
+  # All files in that directory are copied to the root of the FS.
 , populateImageCommands ? ""
 , volumeLabel
 , uuid ? "44444444-4444-4444-8888-888888888888"
@@ -25,27 +25,28 @@ let
   pkgsMySystem = (import ./../.. { system = "x86_64-linux"; });
 in
 pkgsMySystem.vmTools.runInLinuxVM (
-pkgsMySystem.runCommand "test" {
-  name = "btrfs.img${lib.optionalString compressImage ".zst"}";
+  pkgsMySystem.runCommand "test"
+  {
+    name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
-  nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
-  ++ lib.optional compressImage zstd;
+    nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
+      ++ lib.optional compressImage zstd;
 
-  QEMU_OPTS = "-drive file=$out,format=raw,if=virtio,cache=unsafe,werror=report";
+    QEMU_OPTS = "-drive file=$out,format=raw,if=virtio,cache=unsafe,werror=report";
 
-  memSize = 1024;
+    memSize = 1024;
 
-  preVM = ''
-    set -ex
-    touch $out
-    ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 8192M
-  '';
+    preVM = ''
+      set -ex
+      touch $out
+      ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 8192M
+    '';
 
-  postVM = ''
-    ls -la $out
-  '';
-}
-  
+    postVM = ''
+      ls -la $out
+    '';
+  }
+
     ''
       set -ex
       mknod /dev/btrfs-control c 10 234
