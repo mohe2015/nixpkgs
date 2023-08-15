@@ -99,7 +99,8 @@ let
     lib.listToAttrs (map merge (lib.attrNames mash));
 
   splicePackages =
-    { pkgsBuildBuild
+    { emulatingPackages
+    , pkgsBuildBuild
     , pkgsBuildHost
     , pkgsBuildTarget
     , pkgsHostHost
@@ -111,6 +112,7 @@ let
   splicedPackages = splicePackages
     {
       inherit (pkgs)
+        emulatingPackages
         pkgsBuildBuild pkgsBuildHost pkgsBuildTarget
         pkgsHostHost pkgsHostTarget
         pkgsTargetTarget
@@ -118,6 +120,7 @@ let
     } // {
     # These should never be spliced under any circumstances
     inherit (pkgs)
+      emulatingPackages
       pkgsBuildBuild pkgsBuildHost pkgsBuildTarget
       pkgsHostHost pkgsHostTarget
       pkgsTargetTarget

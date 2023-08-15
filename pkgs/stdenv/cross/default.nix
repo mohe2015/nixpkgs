@@ -4,7 +4,7 @@
 
 let
   bootStages = import ../. {
-    inherit lib localSystem overlays;
+    inherit lib emulatingSystem localSystem overlays;
 
     crossSystem = localSystem;
     crossOverlays = [];

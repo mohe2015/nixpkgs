@@ -283,6 +283,7 @@ rec {
   makeScopeWithSplicing = splicePackages: newScope: otherSplices: keep: extra: f:
     let
       spliced0 = splicePackages {
+        emulatingPackages = otherSplices.selfEmulating;
         pkgsBuildBuild = otherSplices.selfBuildBuild;
         pkgsBuildHost = otherSplices.selfBuildHost;
         pkgsBuildTarget = otherSplices.selfBuildTarget;

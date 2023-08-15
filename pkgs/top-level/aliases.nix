@@ -51,7 +51,7 @@ in
 mapAliases ({
   # Added 2018-07-16 preserve, reason: forceSystem should not be used directly in Nixpkgs.
   forceSystem = system: _:
-    (import self.path { localSystem = { inherit system; }; });
+    (import self.path { emulatingSystem = { inherit system; }; localSystem = { inherit system; }; });
 
   _0x0 = throw "0x0 upstream is abandoned and no longer exists: https://gitlab.com/somasis/scripts/";
 

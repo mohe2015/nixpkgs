@@ -180,6 +180,7 @@ let
             let
               bootstrap = import ../stdenv/linux/make-bootstrap-tools.nix {
                 pkgs = import ../.. {
+                  emulatingSystem = { inherit system; }; # TODO FIXME
                   localSystem = { inherit system; };
                 };
               };
@@ -189,6 +190,7 @@ let
           else if hasSuffix "-darwin" system then
             let
               bootstrap = import ../stdenv/darwin/make-bootstrap-tools.nix {
+                emulatingSystem = { inherit system; }; # TODO FIXME
                 localSystem = { inherit system; };
               };
             in {
