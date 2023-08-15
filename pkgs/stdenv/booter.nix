@@ -100,6 +100,7 @@ stageFuns: let
       then args'
       else allPackages ((builtins.removeAttrs args' ["selfBuild"]) // {
         adjacentPackages = if args.selfBuild or true then null else rec {
+          emulatingPackages = prevStage.emulatingPackages;
           pkgsBuildBuild = prevStage.buildPackages;
           pkgsBuildHost = prevStage;
           pkgsBuildTarget =

@@ -5,6 +5,7 @@
 , nixos
 , testers
 , hello
+, emulatingPackages
 }:
 
 stdenv.mkDerivation (finalAttrs: {

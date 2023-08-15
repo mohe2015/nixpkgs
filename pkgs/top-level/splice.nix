@@ -19,7 +19,8 @@ lib: pkgs: actuallySplice:
 let
 
   spliceReal =
-    { pkgsBuildBuild
+    { emulatingPackages
+    , pkgsBuildBuild
     , pkgsBuildHost
     , pkgsBuildTarget
     , pkgsHostHost
@@ -29,7 +30,7 @@ let
     let
       mash =
         # Other pkgs sets
-        pkgsBuildBuild // pkgsBuildTarget // pkgsHostHost // pkgsTargetTarget
+        emulatingPackages // pkgsBuildBuild // pkgsBuildTarget // pkgsHostHost // pkgsTargetTarget
         # The same pkgs sets one probably intends
         // pkgsBuildHost // pkgsHostTarget;
       merge = name: {
@@ -38,6 +39,7 @@ let
           let
             defaultValue = mash.${name};
             # `or {}` is for the non-derivation attsert splicing case, where `{}` is the identity.
+            valueEmulating = emulatingPackages.${name} or { };
             valueBuildBuild = pkgsBuildBuild.${name} or { };
             valueBuildHost = pkgsBuildHost.${name} or { };
             valueBuildTarget = pkgsBuildTarget.${name} or { };
@@ -71,6 +73,7 @@ let
           # The derivation along with its outputs, which we recur
             # on to splice them together.
           if lib.isDerivation defaultValue then augmentedValue // spliceReal {
+            emulatingPackages = tryGetOutputs valueEmulating;
             pkgsBuildBuild = tryGetOutputs valueBuildBuild;
             pkgsBuildHost = tryGetOutputs valueBuildHost;
             pkgsBuildTarget = tryGetOutputs valueBuildTarget;
@@ -81,6 +84,7 @@ let
           } else if lib.isAttrs defaultValue then
             spliceReal
               {
+                emulatingPackages = valueEmulating;
                 pkgsBuildBuild = valueBuildBuild;
                 pkgsBuildHost = valueBuildHost;
                 pkgsBuildTarget = valueBuildTarget;

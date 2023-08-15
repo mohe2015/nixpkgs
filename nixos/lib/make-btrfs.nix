@@ -4,6 +4,7 @@
 # generated image is sized to only fit its contents, with the expectation
 # that a script resizes the filesystem at boot time.
 { pkgs
+, emulatingPackages
 , pkgsBuildBuild
 , lib
   # List of derivations to be included
@@ -22,14 +23,13 @@
 # https://github.com/NixOS/nixpkgs/blob/aefe566f73164776003ef5ef78003b5f9ccd7c4f/pkgs/top-level/stage.nix#L27
 let
   sdClosureInfo = pkgs.buildPackages.closureInfo { rootPaths = storePaths; };
-  pkgsMySystem = (import ./../.. { system = "x86_64-linux"; });
 in
-pkgsMySystem.vmTools.runInLinuxVM (
-  pkgsMySystem.runCommand "test"
+emulatingPackages.vmTools.runInLinuxVM (
+  pkgs.runCommand "test"
   {
     name = "btrfs.img${lib.optionalString compressImage ".zst"}";
 
-    nativeBuildInputs = with pkgsMySystem; [ btrfs-progs libfaketime perl fakeroot util-linux ]
+    nativeBuildInputs = with pkgs; [ btrfs-progs libfaketime perl fakeroot util-linux ]
       ++ lib.optional compressImage zstd;
 
     QEMU_OPTS = "-drive file=$out,format=raw,if=virtio,cache=unsafe,werror=report";
@@ -39,7 +39,7 @@ pkgsMySystem.vmTools.runInLinuxVM (
     preVM = ''
       set -ex
       touch $out
-      ${pkgsMySystem.qemu_kvm}/bin/qemu-img create -f raw $out 8192M
+      ${emulatingPackages.qemu_kvm}/bin/qemu-img create -f raw $out 8192M
     '';
 
     postVM = ''
@@ -51,13 +51,13 @@ pkgsMySystem.vmTools.runInLinuxVM (
       set -ex
       mknod /dev/btrfs-control c 10 234
       mkdir /mnt
-      mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup /dev/${pkgsMySystem.vmTools.hd}
+      mkfs.btrfs --verbose --label ${volumeLabel} --uuid ${uuid} --checksum xxhash --data single --metadata dup /dev/${emulatingPackages.vmTools.hd}
       # compress-force=zstd     Used:  870.09MiB
       # compress-force=zstd:15  Used:  839.05MiB 806.78MiB
       # compress-force=zlib:9   Used:  860.03MiB
       # compress-force=lzo      Used: 1017.20MiB
       # none                    Used:    1.44GiB 1.33GiB
-      mount -o compress-force=zstd /dev/${pkgsMySystem.vmTools.hd} /mnt
+      mount -o compress-force=zstd /dev/${emulatingPackages.vmTools.hd} /mnt
 
       (
       mkdir -p ./files
@@ -82,7 +82,7 @@ pkgsMySystem.vmTools.runInLinuxVM (
 
       btrfs filesystem usage /mnt
 
-      #${pkgsMySystem.duperemove}/bin/duperemove -q -r -d /mnt
+      #${pkgs.duperemove}/bin/duperemove -q -r -d /mnt
 
       #btrfs filesystem usage /mnt
 

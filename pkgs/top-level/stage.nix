@@ -120,6 +120,7 @@ let
     # platform, because the the former two alone affect the interface of the
     # final package; the build platform is just an implementation detail that
     # should not leak.
+    emulatingPackages = withFallback adjacentPackages.emulatingPackages;
     pkgsBuildBuild = withFallback adjacentPackages.pkgsBuildBuild;
     pkgsBuildHost = withFallback adjacentPackages.pkgsBuildHost;
     pkgsBuildTarget = withFallback adjacentPackages.pkgsBuildTarget;
