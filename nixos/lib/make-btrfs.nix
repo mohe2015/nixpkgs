@@ -1,3 +1,4 @@
+# nix-build --show-trace nixos -I nixos-config=nixos/modules/installer/sd-card/sd-image-aarch64.nix -A config.system.build.sdImage --argstr system aarch64-linux
 # Builds an BTRFS image containing a populated /nix/store with the closure
 # of store paths passed in the storePaths parameter, in addition to the
 # contents of a directory that can be populated with commands. The
