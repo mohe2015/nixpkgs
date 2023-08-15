@@ -8,8 +8,8 @@
     ./sd-image.nix
   ];
 
-  nixpkgs.system = "aarch64-linux";
-  nixpkgs.emulatingSystem = "x86-64_linux";
+  nixpkgs.emulatingSystem.system = "x86-64_linux";
+  nixpkgs.localSystem.system = "aarch64-linux";
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;

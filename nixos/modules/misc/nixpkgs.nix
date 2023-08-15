@@ -90,7 +90,7 @@ let
       } // systemArgs)
     else
       import ../../.. {
-        inherit (cfg) config overlays localSystem crossSystem;
+        inherit (cfg) config overlays emulatingSystem localSystem crossSystem;
       };
 
   finalPkgs = if opt.pkgs.isDefined then cfg.pkgs.appendOverlays cfg.overlays else defaultPkgs;
@@ -231,7 +231,19 @@ in
       '';
     };
 
-    # TODO FIXME add here?
+    emulatingSystem = mkOption {
+      type = types.attrs; # TODO utilize lib.systems.parsedPlatform
+      default = { inherit (cfg) localSystem; };
+      example = { system = "aarch64-linux"; config = "aarch64-unknown-linux-gnu"; };
+      # Make sure that the final value has all fields for sake of other modules
+      # referring to this. TODO make `lib.systems` itself use the module system.
+      apply = lib.systems.elaborate;
+      defaultText = literalExpression
+        ''(import "''${nixos}/../lib").lib.systems.examples.aarch64-multiplatform'';
+      description = lib.mdDoc ''
+        ...
+      '';
+    };
 
     localSystem = mkOption {
       type = types.attrs; # TODO utilize lib.systems.parsedPlatform
