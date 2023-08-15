@@ -600,7 +600,7 @@ in
     stdenv = import ../generic rec {
       name = "stdenv-linux";
 
-      emulatingPlatform = localSystem;
+      emulatingPlatform = emulatingSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;
