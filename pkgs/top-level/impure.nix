@@ -11,10 +11,14 @@ let
 
 in
 
-{ # We put legacy `system` into `localSystem`, if `localSystem` was not passed.
+{
+  # The system this build is emulated on.
+  emulatingSystem ? localSystem
+
+  # We put legacy `system` into `localSystem`, if `localSystem` was not passed.
   # If neither is passed, assume we are building packages on the current
   # (build, in GNU Autotools parlance) platform.
-  localSystem ? { system = args.system or builtins.currentSystem; }
+, localSystem ? { system = args.system or builtins.currentSystem; }
 
 # These are needed only because nix's `--arg` command-line logic doesn't work
 # with unnamed parameters allowed by ...
@@ -85,5 +89,5 @@ assert args ? localSystem -> !(args ? system);
 assert args ? system -> !(args ? localSystem);
 
 import ./. (builtins.removeAttrs args [ "system" ] // {
-  inherit config overlays localSystem;
+  inherit config overlays emulatingSystem localSystem;
 })

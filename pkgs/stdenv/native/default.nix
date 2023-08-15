@@ -1,5 +1,5 @@
 { lib
-, localSystem, crossSystem, config, overlays, crossOverlays ? []
+, emulatingSystem, localSystem, crossSystem, config, overlays, crossOverlays ? []
 }:
 
 assert crossSystem == localSystem;
@@ -81,7 +81,7 @@ let
     { cc, fetchurl, extraPath ? [], overrides ? (self: super: { }), extraNativeBuildInputs ? [] }:
 
     import ../generic {
-      emulatingPlatform = localSystem;
+      emulatingPlatform = emulatingSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;

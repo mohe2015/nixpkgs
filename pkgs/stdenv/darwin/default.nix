@@ -8,6 +8,7 @@
 # the bootstrap process and working with it.
 
 { lib
+, emulatingSystem
 , localSystem
 , crossSystem
 , config
@@ -153,7 +154,7 @@ let
       thisStdenv = import ../generic {
         name = "${name}-stdenv-darwin";
 
-        emulatingPlatform = localSystem;
+        emulatingPlatform = emulatingSystem;
         buildPlatform = localSystem;
         hostPlatform = localSystem;
         targetPlatform = localSystem;
@@ -1221,7 +1222,7 @@ in
     stdenv = import ../generic {
       name = "stdenv-darwin";
 
-      emulatingPlatform = localSystem;
+      emulatingPlatform = emulatingSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;

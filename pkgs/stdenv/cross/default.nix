@@ -1,5 +1,5 @@
 { lib
-, localSystem, crossSystem, config, overlays, crossOverlays ? []
+, emulatingSystem, localSystem, crossSystem, config, overlays, crossOverlays ? []
 }:
 
 let
@@ -45,7 +45,7 @@ in lib.init bootStages ++ [
     overlays = overlays ++ crossOverlays;
     selfBuild = false;
     stdenv = adaptStdenv (buildPackages.stdenv.override (old: rec {
-      emulatingPlatform = localSystem;
+      emulatingPlatform = emulatingSystem;
       buildPlatform = localSystem;
       hostPlatform = crossSystem;
       targetPlatform = crossSystem;

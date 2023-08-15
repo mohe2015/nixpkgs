@@ -16,7 +16,11 @@
    evaluation is taking place, and the configuration from environment variables
    or dot-files. */
 
-{ # The system packages will be built on. See the manual for the
+{
+  # This is the system that is emulating the build
+  emulatingSystem
+  
+, # The system packages will be built on. See the manual for the
   # subtle division of labor between these two `*System`s and the three
   # `*Platform`s.
   localSystem
@@ -57,6 +61,8 @@ in let
     throwIfNot (lib.isList crossOverlays) "The crossOverlays argument to nixpkgs must be a list."
     lib.foldr (x: throwIfNot (lib.isFunction x) "All crossOverlays passed to nixpkgs must be functions.") (r: r) crossOverlays
     ;
+
+  emulatingSystem = lib.systems.elaborate args.emulatingSystem;
 
   localSystem = lib.systems.elaborate args.localSystem;
 
@@ -124,7 +130,7 @@ in let
   boot = import ../stdenv/booter.nix { inherit lib allPackages; };
 
   stages = stdenvStages {
-    inherit lib localSystem crossSystem config overlays crossOverlays;
+    inherit lib emulatingSystem localSystem crossSystem config overlays crossOverlays;
   };
 
   pkgs = boot stages;

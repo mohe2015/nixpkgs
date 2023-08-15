@@ -54,7 +54,7 @@
 #
 #     $ nix-tree --derivation $(nix-instantiate -A stdenv)
 { lib
-, localSystem, crossSystem, config, overlays, crossOverlays ? []
+, emulatingSystem, localSystem, crossSystem, config, overlays, crossOverlays ? []
 
 , bootstrapFiles ?
   let table = {
@@ -160,7 +160,7 @@ let
 
       thisStdenv = import ../generic {
         name = "${name}-stdenv-linux";
-        emulatingPlatform = localSystem;
+        emulatingPlatform = emulatingSystem;
         buildPlatform = localSystem;
         hostPlatform = localSystem;
         targetPlatform = localSystem;

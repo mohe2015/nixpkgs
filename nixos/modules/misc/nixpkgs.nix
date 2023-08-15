@@ -76,10 +76,12 @@ let
           systemArgs =
             if isCross
             then {
+              # TODO HERE?
               localSystem = cfg.buildPlatform;
               crossSystem = cfg.hostPlatform;
             }
             else {
+              # TODO HERE?
               localSystem = cfg.hostPlatform;
             };
       in

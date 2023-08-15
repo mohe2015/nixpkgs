@@ -1,5 +1,5 @@
 { lib
-, localSystem, crossSystem, config, overlays, crossOverlays ? []
+, emulatingSystem, localSystem, crossSystem, config, overlays, crossOverlays ? []
 }:
 
 assert crossSystem == localSystem;
@@ -202,7 +202,7 @@ in
 
     stdenv = import ../generic {
       name = "stdenv-freebsd-boot-1";
-      emulatingPlatform = localSystem;
+      emulatingPlatform = emulatingSystem;
       buildPlatform = localSystem;
       hostPlatform = localSystem;
       targetPlatform = localSystem;
