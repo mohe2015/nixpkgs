@@ -13,7 +13,7 @@ in
 
 {
   # The system this build is emulated on.
-  emulatingSystem ? localSystem # TODO FIXME
+  emulatingSystem
 
   # We put legacy `system` into `localSystem`, if `localSystem` was not passed.
   # If neither is passed, assume we are building packages on the current

@@ -13,7 +13,7 @@ let cross = if crossSystem != null
               in (import "${pkgspath}/pkgs/stdenv/darwin" args');
            }
       else {};
-in with import pkgspath ({ inherit localSystem; } // cross // custom-bootstrap);
+in with import pkgspath ({ inherit localSystem emulatedSystem; } // cross // custom-bootstrap);
 
 let
   llvmPackages = llvmPackages_11;

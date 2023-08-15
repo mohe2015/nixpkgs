@@ -1,5 +1,6 @@
 # To build, use:
 # nix-build nixos -I nixos-config=nixos/modules/installer/sd-card/sd-image-aarch64.nix -A config.system.build.sdImage
+# nix eval -I nixos-config=nixos/modules/installer/sd-card/sd-image-aarch64.nix --file ./nixos config.system.build.sdImage
 { config, lib, pkgs, ... }:
 
 {
@@ -9,7 +10,7 @@
   ];
 
   nixpkgs.emulatingSystem.system = "x86-64_linux";
-  nixpkgs.localSystem.system = "aarch64-linux";
+  nixpkgs.system = "aarch64-linux";
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
