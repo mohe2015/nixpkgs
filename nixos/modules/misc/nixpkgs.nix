@@ -76,12 +76,12 @@ let
           systemArgs =
             if isCross
             then {
-              emulatingSystem = cfg.buildPlatform; # TODO FIXME
+              emulatingSystem = cfg.emulatingPlatform;
               localSystem = cfg.buildPlatform;
               crossSystem = cfg.hostPlatform;
             }
             else {
-              emulatingSystem = cfg.buildPlatform; # TODO FIXME
+              emulatingSystem = cfg.emulatingPlatform;
               localSystem = cfg.hostPlatform;
             };
       in

@@ -8,7 +8,7 @@ let
   # tryEval would be too fragile, masking different problems as if they're
   # unsupported platform problems.
   allPkgs = import ../default.nix {
-    emulatingSystem = stdenv.hostPlatform.system; # TODO FIXME
+    emulatingSystem = stdenv.emulatingPlatform.system; # TODO FIXME
     system = stdenv.hostPlatform.system;
     localSystem = stdenv.buildPlatform.system;
     config = {

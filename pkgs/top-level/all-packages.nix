@@ -3329,7 +3329,7 @@ with pkgs;
   #     pkgsCross.aarch64-multiplatform.freshBootstrapTools.build
   freshBootstrapTools = if stdenv.hostPlatform.isDarwin then
     callPackage ../stdenv/darwin/make-bootstrap-tools.nix {
-      emulatingSystem = stdenv.buildPlatform; # TODO FIXME
+      emulatingSystem = stdenv.emulatingPlatform; # TODO FIXME
       localSystem = stdenv.buildPlatform;
       crossSystem =
         if stdenv.buildPlatform == stdenv.hostPlatform then null else stdenv.hostPlatform;
@@ -40398,7 +40398,7 @@ with pkgs;
                 [(
                   { lib, ... }: {
                     config.nixpkgs.pkgs = lib.mkDefault pkgs;
-                    config.nixpkgs.emulatingSystem = lib.mkDefault stdenv.hostPlatform;
+                    config.nixpkgs.emulatingSystem = lib.mkDefault stdenv.emulatingPlatform;
                     config.nixpkgs.localSystem = lib.mkDefault stdenv.hostPlatform;
                   }
                 )] ++ (

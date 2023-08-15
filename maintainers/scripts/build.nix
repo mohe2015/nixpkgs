@@ -1,5 +1,5 @@
 { maintainer
-, emulatingSystem ? localSystem
+, emulatingSystem
 , localSystem ? { system = args.system or builtins.currentSystem; }
 , system ? localSystem.system
 , crossSystem ? localSystem

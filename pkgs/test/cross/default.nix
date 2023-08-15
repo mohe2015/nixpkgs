@@ -55,7 +55,7 @@ let
 
   mapMultiPlatformTest = crossSystemFun: test: lib.mapAttrs (name: system: test rec {
     crossPkgs = import pkgs.path {
-      emulatingSystem = { inherit (pkgs.stdenv.hostPlatform) config; }; # TODO FIXME
+      emulatingSystem = { inherit (pkgs.stdenv.emulatingPlatform) config; }; # TODO FIXME
       localSystem = { inherit (pkgs.stdenv.hostPlatform) config; };
       crossSystem = crossSystemFun system;
     };
