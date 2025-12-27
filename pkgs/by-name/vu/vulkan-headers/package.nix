@@ -18,7 +18,7 @@ stdenv.mkDerivation rec {
   ];
 
   # TODO: investigate why <algorithm> isn't found
-  cmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [ "-DVULKAN_HEADERS_ENABLE_MODULE=OFF" ];
+  cmakeFlags = [ "-DVULKAN_HEADERS_ENABLE_MODULE=ON" ];
 
   src = fetchFromGitHub {
     owner = "KhronosGroup";
