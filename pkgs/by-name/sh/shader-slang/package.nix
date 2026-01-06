@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchurl,
   fetchFromGitHub,
   cmake,
   ninja,
@@ -97,8 +98,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SLANG_USE_SYSTEM_UNORDERED_DENSE" true)
     (lib.cmakeFeature "SLANG_SLANG_LLVM_FLAVOR" "DISABLE")
     # slang-rhi tries to download headers and precompiled binaries for these backends
+    (lib.cmakeBool "SLANG_ENABLE_SLANG_RHI" true)
     (lib.cmakeBool "SLANG_RHI_ENABLE_OPTIX" false)
-    (lib.cmakeBool "SLANG_RHI_ENABLE_VULKAN" false)
+    (lib.cmakeBool "SLANG_RHI_ENABLE_VULKAN" true)
+    (lib.cmakeFeature "SLANG_RHI_VULKAN_HEADERS_URL" "${fetchurl {
+      url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.318.zip";
+      hash = "sha256-GCvPE10B0c0nr6wRas25uR6GDAelNa9M3nVCmQn6biw=";
+    }}")
     (lib.cmakeBool "SLANG_RHI_ENABLE_METAL" false)
     (lib.cmakeBool "SLANG_RHI_ENABLE_WGPU" false)
   ]
