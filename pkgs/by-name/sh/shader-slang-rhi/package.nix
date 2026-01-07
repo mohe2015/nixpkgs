@@ -42,7 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
-    "doc"
   ];
 
   strictDeps = true;
@@ -100,8 +99,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "SLANG_SLANG_LLVM_FLAVOR" "DISABLE")
     # slang-rhi tries to download headers and precompiled binaries for these backends
     (lib.cmakeBool "SLANG_RHI_FETCH_SLANG" false)
-    (lib.cmakeFeature "SLANG_RHI_SLANG_INCLUDE_DIR" "${shader-slang}/include")
-    (lib.cmakeFeature "SLANG_RHI_SLANG_BINARY_DIR" "${shader-slong}/lib")
+    (lib.cmakeFeature "SLANG_RHI_SLANG_INCLUDE_DIR" "${shader-slang.dev}/include")
+    (lib.cmakeFeature "SLANG_RHI_SLANG_BINARY_DIR" "${shader-slang.out}")
     (lib.cmakeBool "SLANG_RHI_BUILD_TESTS_WITH_GLFW" false) # TODO change
     (lib.cmakeBool "SLANG_RHI_BUILD_EXAMPLES" false) # TODO change
     (lib.cmakeBool "SLANG_ENABLE_SLANG_RHI" true)
@@ -124,12 +123,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   postInstall = ''
     mkdir -p $dev/lib
-    mv {$out,$dev}/lib/cmake
+    #mv {$out,$dev}/lib/cmake
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/slangc";
-  versionCheckProgramArg = "-v";
+  #nativeInstallCheckInputs = [ versionCheckHook ];
+  #versionCheckProgram = "${placeholder "out"}/bin/slangc";
+  #versionCheckProgramArg = "-v";
   doInstallCheck = true;
 
   passthru = {
@@ -171,7 +170,7 @@ stdenv.mkDerivation (finalAttrs: {
       niklaskorz
       samestep
     ];
-    mainProgram = "slangc";
+    #mainProgram = "slangc";
     platforms = lib.platforms.all;
   };
 })
