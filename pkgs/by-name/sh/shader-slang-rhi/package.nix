@@ -11,6 +11,7 @@
   libxml2,
   libX11,
   glslang,
+  shader-slang,
   unordered_dense,
   versionCheckHook,
   gitUpdater,
@@ -28,14 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "shader-slang";
     repo = "slang-rhi";
     rev = "5ee23f14b0a360a3ce821d81378605cb57135fdd";
-    hash = "";
+    hash = "sha256-yLWjL20NOP1ivuUemOcU3+VEvC77nV83A0HR1Lo+yzQ=";
     fetchSubmodules = true;
   };
 
   postPatch = ''
     # Header location has moved in glslang 15+
-    substituteInPlace source/slang-glslang/slang-glslang.cpp \
-      --replace-fail '"SPIRV/GlslangToSpv.h"' '"glslang/SPIRV/GlslangToSpv.h"'
+    #substituteInPlace source/slang-glslang/slang-glslang.cpp \
+    #  --replace-fail '"SPIRV/GlslangToSpv.h"' '"glslang/SPIRV/GlslangToSpv.h"'
   '';
 
   outputs = [
@@ -98,6 +99,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SLANG_USE_SYSTEM_UNORDERED_DENSE" true)
     (lib.cmakeFeature "SLANG_SLANG_LLVM_FLAVOR" "DISABLE")
     # slang-rhi tries to download headers and precompiled binaries for these backends
+    (lib.cmakeBool "SLANG_RHI_FETCH_SLANG" false)
+    (lib.cmakeFeature "SLANG_RHI_SLANG_INCLUDE_DIR" "${shader-slang}/include")
+    (lib.cmakeFeature "SLANG_RHI_SLANG_BINARY_DIR" "${shader-slong}/lib")
+    (lib.cmakeBool "SLANG_RHI_BUILD_TESTS_WITH_GLFW" false) # TODO change
+    (lib.cmakeBool "SLANG_RHI_BUILD_EXAMPLES" false) # TODO change
     (lib.cmakeBool "SLANG_ENABLE_SLANG_RHI" true)
     (lib.cmakeBool "SLANG_RHI_ENABLE_OPTIX" false)
     (lib.cmakeBool "SLANG_RHI_ENABLE_VULKAN" true)
