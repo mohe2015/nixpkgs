@@ -101,6 +101,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SLANG_RHI_FETCH_SLANG" false)
     (lib.cmakeFeature "SLANG_RHI_SLANG_INCLUDE_DIR" "${shader-slang.dev}/include")
     (lib.cmakeFeature "SLANG_RHI_SLANG_BINARY_DIR" "${shader-slang.out}")
+    (lib.cmakeBool "SLANG_RHI_BUILD_SHARED" true)
     (lib.cmakeBool "SLANG_RHI_BUILD_TESTS_WITH_GLFW" false) # TODO change
     (lib.cmakeBool "SLANG_RHI_BUILD_EXAMPLES" false) # TODO change
     (lib.cmakeBool "SLANG_ENABLE_SLANG_RHI" true)
